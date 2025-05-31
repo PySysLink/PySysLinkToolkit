@@ -1,0 +1,66 @@
+import pathlib
+import yaml
+from typing import Any, Dict, List
+
+from pysyslink_toolkit.HighLevelBlock import HighLevelBlock
+from pysyslink_toolkit.LowLevelBlockStructure import LowLevelBlockStructure
+from pysyslink_toolkit.BlockRenderInformation import BlockRenderInformation
+from pysyslink_toolkit.load_plugins import load_plugins_from_paths
+from pysyslink_toolkit.compile_system import compile_pslk_to_yaml
+
+def _load_config(config_path: str) -> Dict[str, Any]:
+    with open(config_path, "r") as f:
+        return yaml.safe_load(f)
+
+def compile_system(config_path: str, high_level_system_path: str, output_yaml_path: str) -> str:
+    """
+    Compile a high-level system (dict) to a low-level system (dict).
+    """
+
+    try:
+        compile_pslk_to_yaml(high_level_system_path, config_path, output_yaml_path)
+        return 'success'
+    except Exception as e:
+        return 'failure: {}'.format(e)
+
+def run_simulation(config_path: str, low_level_system: Dict[str, Any], sim_options: Dict[str, Any]) -> Any:
+    """
+    Run a simulation asynchronously (dummy implementation).
+    """
+    # This is a placeholder. You would implement your simulation logic here.
+    # For now, just return a dummy result.
+    import asyncio
+
+    async def simulate():
+        # Replace with actual simulation logic
+        await asyncio.sleep(1)
+        return {"status": "completed", "result": "Simulation result"}
+
+    loop = asyncio.get_event_loop()
+    return loop.run_until_complete(simulate())
+
+def get_available_block_libraries(config_path: str) -> List[Dict[str, Any]]:
+    """
+    Return all available libraries and blocks from loaded plugins.
+    """
+    config = _load_config(config_path)
+    plugins = load_plugins_from_paths(config['plugin_paths'])
+    libraries = []
+    for plugin in plugins:
+        if hasattr(plugin, "get_block_libraries"):
+            libraries.extend(plugin.get_block_libraries())
+    return libraries
+
+def get_block_render_information(config_path: str, block_data: Dict[str, Any]) -> BlockRenderInformation:
+    """
+    Return render information for a block.
+    """
+    config = _load_config(config_path)
+    plugins = load_plugins_from_paths(config['plugin_paths'])
+    block = HighLevelBlock.from_dict(block_data)
+    for plugin in plugins:
+        try:
+            return plugin.get_block_render_information(block)
+        except NotImplementedError:
+            continue
+    raise RuntimeError(f"No plugin could provide render information for block: {block.block_type}")
