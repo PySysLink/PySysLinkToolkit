@@ -1,0 +1,43 @@
+Blocks:
+- Id: neuron1_gain0
+  Name: Gain 1
+  BlockType: BasicCpp
+  BlockClass: BasicBlocks/Gain
+  Gain: 2.0
+- Id: neuron1_gain1
+  Name: Gain 2
+  BlockType: BasicCpp
+  BlockClass: BasicBlocks/Gain
+  Gain: -1.0
+- Id: neuron1_offset
+  Name: Offset
+  BlockType: BasicCpp
+  BlockClass: BasicBlocks/Constant
+  Value: 0.5
+- Id: neuron1_adder
+  Name: Adder
+  BlockType: BasicCpp
+  BlockClass: BasicBlocks/Adder
+  Gains:
+  - 1.0
+  - 1.0
+  - 1.0
+Links:
+- Id: neuron1_link0
+  Name: link_gain1_to_adder
+  SourceBlockId: neuron1_gain0
+  SourcePortIdx: 0
+  DestinationBlockId: neuron1_adder
+  DestinationPortIdx: 0
+- Id: neuron1_link1
+  Name: link_gain2_to_adder
+  SourceBlockId: neuron1_gain1
+  SourcePortIdx: 0
+  DestinationBlockId: neuron1_adder
+  DestinationPortIdx: 1
+- Id: neuron1_link2
+  Name: link_offset_to_adder
+  SourceBlockId: neuron1_offset
+  SourcePortIdx: 0
+  DestinationBlockId: neuron1_adder
+  DestinationPortIdx: 2

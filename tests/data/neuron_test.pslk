@@ -1,0 +1,20 @@
+{
+   "blocks": [
+      {
+         "id": "neuron1",
+         "label": "Neuron Block",
+         "inputPorts": 3,
+         "outputPorts": 1,
+         "block_library": "neuron_library",
+         "block_type": "neuron",
+         "properties": {
+            "gains": [
+               2.0,
+               -1.0
+            ],
+            "offset": 0.5
+         }
+      }
+   ],
+   "links": []
+}

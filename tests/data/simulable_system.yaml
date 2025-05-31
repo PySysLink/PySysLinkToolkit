@@ -1,0 +1,100 @@
+Blocks:
+  - Id: sum1
+    Name: Main Adder
+    BlockType: BasicCpp
+    BlockClass: BasicBlocks/Adder
+    Gains:
+      - 1.0
+      - 1.0
+  - Id: sum2
+    Name: Second Adder
+    BlockType: BasicCpp
+    BlockClass: BasicBlocks/Adder
+    Gains:
+      - 1.0
+      - 1.0
+      - 0.1
+  - Id: sum3
+    Name: Second Adder
+    BlockType: BasicCpp
+    BlockClass: BasicBlocks/Adder
+    Gains:
+      - -0.11
+      - 1.0
+  - Id: const1
+    Name: Operand 1
+    BlockType: BasicCpp
+    BlockClass: BasicBlocks/Constant
+    Value: 5.0
+  - Id: const2
+    Name: Operand 2
+    BlockType: BasicCpp
+    BlockClass: BasicBlocks/Constant
+    Value: 3.0
+  - Id: display1
+    Name: Result
+    BlockType: BasicCpp
+    BlockClass: BasicBlocks/Display
+  - Id: accumulator1
+    Name: Main accumulator
+    BlockType: BasicCpp
+    BlockClass: BasicBlocks/Accumulator
+    SampleTime: 0.2
+    InitialValue: -1.0
+
+Links:
+  - Id: link1
+    Name: link1
+    SourceBlockId: const1
+    SourcePortIdx: 0
+    DestinationBlockId: sum1
+    DestinationPortIdx: 0
+  - Id: link2
+    Name: link2
+    SourceBlockId: const2
+    SourcePortIdx: 0
+    DestinationBlockId: sum1
+    DestinationPortIdx: 1
+  - Id: link3
+    Name: link3
+    SourceBlockId: sum2
+    SourcePortIdx: 0
+    DestinationBlockId: display1
+    DestinationPortIdx: 0
+  - Id: link4
+    Name: link3
+    SourceBlockId: sum1
+    SourcePortIdx: 0
+    DestinationBlockId: sum2
+    DestinationPortIdx: 0
+  - Id: link5
+    Name: link3
+    SourceBlockId: const1
+    SourcePortIdx: 0
+    DestinationBlockId: sum2
+    DestinationPortIdx: 1
+  - Id: link5
+    Name: link3
+    SourceBlockId: sum3
+    SourcePortIdx: 0
+    DestinationBlockId: sum2
+    DestinationPortIdx: 2
+  - Id: link6
+    Name: link3
+    SourceBlockId: sum3
+    SourcePortIdx: 0
+    DestinationBlockId: accumulator1
+    DestinationPortIdx: 0
+  - Id: link6
+    Name: link3
+    SourceBlockId: accumulator1
+    SourcePortIdx: 0
+    DestinationBlockId: sum3
+    DestinationPortIdx: 0
+
+  - Id: link8
+    Name: link3
+    SourceBlockId: const1
+    SourcePortIdx: 0
+    DestinationBlockId: sum3
+    DestinationPortIdx: 1

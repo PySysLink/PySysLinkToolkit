@@ -1,12 +1,14 @@
+import asyncio
 import pathlib
 import yaml
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List
 
 from pysyslink_toolkit.HighLevelBlock import HighLevelBlock
 from pysyslink_toolkit.LowLevelBlockStructure import LowLevelBlockStructure
 from pysyslink_toolkit.BlockRenderInformation import BlockRenderInformation
 from pysyslink_toolkit.load_plugins import load_plugins_from_paths
 from pysyslink_toolkit.compile_system import compile_pslk_to_yaml
+from pysyslink_toolkit.simulate_system import simulate_system
 
 def _load_config(config_path: str) -> Dict[str, Any]:
     with open(config_path, "r") as f:
@@ -23,21 +25,24 @@ def compile_system(config_path: str, high_level_system_path: str, output_yaml_pa
     except Exception as e:
         return 'failure: {}'.format(e)
 
-def run_simulation(config_path: str, low_level_system: Dict[str, Any], sim_options: Dict[str, Any]) -> Any:
+def run_simulation(config_path: str, low_level_system: str, sim_options: str, 
+                   output_filename: str, 
+                   display_callback: Callable[[str, float, float], None] = None) -> Any:
     """
     Run a simulation asynchronously (dummy implementation).
     """
     # This is a placeholder. You would implement your simulation logic here.
     # For now, just return a dummy result.
-    import asyncio
 
-    async def simulate():
-        # Replace with actual simulation logic
-        await asyncio.sleep(1)
-        return {"status": "completed", "result": "Simulation result"}
 
     loop = asyncio.get_event_loop()
-    return loop.run_until_complete(simulate())
+    return loop.run_until_complete(simulate_system(
+        low_level_system,
+        sim_options,
+        output_filename,
+        display_callback,
+        "/usr/local/lib"
+    ))
 
 def get_available_block_libraries(config_path: str) -> List[Dict[str, Any]]:
     """

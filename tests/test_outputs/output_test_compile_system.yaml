@@ -1,0 +1,6 @@
+Blocks:
+- Id: dummy
+  Name: Dummy
+  BlockType: DummyType
+  BlockClass: DummyClass
+Links: []

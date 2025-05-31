@@ -4,7 +4,7 @@ import inspect
 from pysyslink_toolkit.Plugin import Plugin
 import yaml
 
-def load_plugins_from_paths(plugin_root_paths):
+def load_plugins_from_paths(plugin_root_paths) -> list[Plugin]:
     plugins = []
     for root in plugin_root_paths:
         root_path = pathlib.Path(root)
@@ -15,7 +15,7 @@ def load_plugins_from_paths(plugin_root_paths):
             py_path = yaml_file.parent / python_filename
             module_name = py_path.stem
             try: 
-                plugins.append(load_plugin_from_file(py_path, module_name))
+                plugins.append(load_plugin_from_file(py_path, module_name, config))
             except ImportError as e:
                 print("Error loading plugin: {}".format(e.msg))
 
@@ -37,7 +37,3 @@ def load_plugin_from_file(path: pathlib.Path, module_name: str, yaml_config: dic
 
     raise ImportError(f"No subclass of Plugin found in {path}")
 
-# Example usage:
-py_file = pathlib.Path("/home/pello/ToolkitPlugins/test_plugin/test_plugin.py")
-plugin_instance = load_plugin_from_file(py_file, "plugin_1")
-print(plugin_instance)
