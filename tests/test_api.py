@@ -65,3 +65,30 @@ def test_get_block_render_information(config_path):
     }
     info = api.get_block_render_information(config_path, block_data)
     assert info is not None
+
+def test_simulation_runs_and_callbacks(config_path):
+    test_dir = os.path.dirname(__file__)
+    system_yaml = os.path.join(test_dir, "data", "simulable_system.yaml")
+    sim_options_yaml = os.path.join(test_dir, "data", "sim_options.yaml")
+    output_yaml = os.path.join(OUTPUT_DIR, "output_test_simulation_runs_and_callbacks.yaml")
+
+    # Prepare a callback to record display updates
+    callback_calls = []
+
+    def display_callback(block_id, time, value):
+        callback_calls.append((block_id, time, value))
+
+    # Run the simulation
+    result = api.run_simulation(
+        config_path,
+        system_yaml,
+        sim_options_yaml,
+        output_yaml,
+        display_callback=display_callback
+    )
+
+    assert os.path.exists(output_yaml)
+    # The simulation result object should not be None
+    assert result is not None
+    # The callback should have been called at least once
+    assert len(callback_calls) > 0

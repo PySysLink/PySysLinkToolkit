@@ -35,14 +35,13 @@ def run_simulation(config_path: str, low_level_system: str, sim_options: str,
     # For now, just return a dummy result.
 
 
-    loop = asyncio.get_event_loop()
-    return loop.run_until_complete(simulate_system(
+    simulate_system(
         low_level_system,
         sim_options,
         output_filename,
         display_callback,
         "/usr/local/lib"
-    ))
+    )
 
 def get_available_block_libraries(config_path: str) -> List[Dict[str, Any]]:
     """
