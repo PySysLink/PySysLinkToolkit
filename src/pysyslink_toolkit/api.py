@@ -25,23 +25,24 @@ def compile_system(config_path: str, high_level_system_path: str, output_yaml_pa
     except Exception as e:
         return 'failure: {}'.format(e)
 
-def run_simulation(config_path: str, low_level_system: str, sim_options: str, 
+async def run_simulation(config_path: str, low_level_system: str, sim_options: str, 
                    output_filename: str, 
-                   display_callback: Callable[[str, float, float], None] = None) -> Any:
+                   display_callback: Callable[[str, float, float], None] = None) -> dict:
     """
     Run a simulation asynchronously (dummy implementation).
     """
     # This is a placeholder. You would implement your simulation logic here.
     # For now, just return a dummy result.
 
-
-    simulate_system(
+    result = await simulate_system(
         low_level_system,
         sim_options,
         output_filename,
         display_callback,
         "/usr/local/lib"
     )
+
+    return result
 
 def get_available_block_libraries(config_path: str) -> List[Dict[str, Any]]:
     """

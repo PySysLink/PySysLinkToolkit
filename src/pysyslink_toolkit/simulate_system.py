@@ -1,17 +1,18 @@
-import faulthandler; faulthandler.enable()
+import faulthandler
+import re; faulthandler.enable()
 import json
 import time
 import pysyslink_base
 import yaml
-from typing import Callable, Any
+from typing import Callable, Any    
 
-def simulate_system(
+async def simulate_system(
     system_yaml_path: str,
     sim_options_yaml_path: str,
     output_filename: str,
     display_callback: Callable[[str, float, float], None] = None,
     plugin_dir: str = "/usr/local/lib"
-) -> None:
+) -> dict:
     """
     Simulate a system using PySysLinkBase Python bindings.
 
@@ -27,10 +28,12 @@ def simulate_system(
     """
     # Set up logging
     pysyslink_base.SpdlogManager.configure_default_logger()
-    pysyslink_base.SpdlogManager.set_log_level(pysyslink_base.LogLevel.debug)
+    pysyslink_base.SpdlogManager.set_log_level(pysyslink_base.LogLevel.off)
 
     # Block events handler (for display updates)
     block_events_handler = pysyslink_base.BlockEventsHandler()
+    print(pysyslink_base.BlockEventsHandler.register_value_update_block_event_callback)
+    block_events_handler.register_value_update_block_event_callback(display_callback)
 
     # Load plugins
     plugin_loader = pysyslink_base.BlockTypeSupportPluginLoader()
@@ -51,29 +54,30 @@ def simulate_system(
 
     # Load simulation options from YAML
     with open(sim_options_yaml_path, "r") as f:
-        sim_opts_dict = yaml.safe_load(f)
+        # This follows https://stackoverflow.com/questions/58434563/difference-between-yaml-load-and-yaml-safeloader-in-pyyaml to fix floating point on scientific notation
+        loader = yaml.SafeLoader
+        loader.add_implicit_resolver(
+            u'tag:yaml.org,2002:float',
+            re.compile(u'''^(?:
+            [-+]?(?:[0-9][0-9_]*)\\.[0-9_]*(?:[eE][-+]?[0-9]+)?
+            |[-+]?(?:[0-9][0-9_]*)(?:[eE][-+]?[0-9]+)
+            |\\.[0-9_]+(?:[eE][-+][0-9]+)?
+            |[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\\.[0-9_]*
+            |[-+]?\\.(?:inf|Inf|INF)
+            |\\.(?:nan|NaN|NAN))$''', re.X),
+            list(u'-+0123456789.'))
+        sim_opts_dict = yaml.load(f, Loader=loader)
 
     simulation_options = pysyslink_base.SimulationOptions()
-    simulation_options.start_time = 0.0
-    simulation_options.stop_time = 10.0
-    simulation_options.run_in_natural_time = False
-    simulation_options.natural_time_speed_multiplier = 1
-    simulation_options.block_ids_input_or_output_and_indexes_to_log = [
-        ("const1", "output", 0),
-        ("integrator1", "output", 0)
-    ]
-    simulation_options.solvers_configuration = {
-        "default": {
-            # "Type": "EulerBackward",
-            # "FirstTimeStep": 0.1,
-            # "ActivateEvents": False
-            "Type": "odeint",
-            "ControlledSolver": "rosenbrock4_controller",
-            "AbsoluteTolerance": 1e-8,
-            "RelativeTolerance": 1e-8 
-        }
-    }
-
+    simulation_options.start_time = sim_opts_dict.get("start_time", 0.0)
+    simulation_options.stop_time = sim_opts_dict.get("stop_time", 10.0)
+    simulation_options.run_in_natural_time = sim_opts_dict.get("run_in_natural_time", False)
+    simulation_options.natural_time_speed_multiplier = sim_opts_dict.get("natural_time_speed_multiplier", 1)
+    simulation_options.block_ids_input_or_output_and_indexes_to_log = sim_opts_dict.get(
+        "block_ids_input_or_output_and_indexes_to_log", []
+    )
+    simulation_options.solvers_configuration = sim_opts_dict.get("solvers_configuration", {})
+    
 
     # Create and run simulation
     simulation_manager = pysyslink_base.SimulationManager(simulation_model, simulation_options)
@@ -92,9 +96,8 @@ def simulate_system(
                     "values": getattr(typed_signal, "values", [])
                 }
         json.dump(all_signals, f, indent=2)
-        print(all_signals)
+        return all_signals
 
-    print("Function end")
 
     
 
@@ -111,8 +114,8 @@ if __name__ == "__main__":
 
     os.makedirs(os.path.dirname(output_yaml_path), exist_ok=True)
 
-    def debug_display_callback(block_id, time, value):
-        print(f"[Display] {block_id} at t={time}: {value}")
+    def debug_display_callback(event):
+        print("[Python]:{},{},{}".format(event.value_id, event.simulation_time, event.value))
 
     simulate_system(
         system_yaml_path,

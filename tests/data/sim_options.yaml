@@ -4,5 +4,10 @@ run_in_natural_time: false
 natural_time_speed_multiplier: 1
 block_ids_input_or_output_and_indexes_to_log:
   - [const1, output, 0]
-  - [acumulator1, output, 0]
-  - [display1, input, 0]
+  - [integrator1, output, 0]
+solvers_configuration:
+  default:
+    Type: odeint
+    ControlledSolver: rosenbrock4_controller
+    AbsoluteTolerance: 1e-8
+    RelativeTolerance: 1e-8
