@@ -14,6 +14,20 @@
             ],
             "offset": 0.5
          }
+      },
+      {
+         "id": "adder1",
+         "label": "Adder Block",
+         "inputPorts": 2,
+         "outputPorts": 1,
+         "block_library": "core_BasicBlocks",
+         "block_type": "Adder",
+         "properties": {
+            "Gains": [
+               2.0,
+               -1.0
+            ]
+         }
       }
    ],
    "links": []

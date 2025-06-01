@@ -4,7 +4,7 @@ from pysyslink_toolkit.LowLevelBlockStructure import LowLevelBlock, LowLevelLink
 from pysyslink_toolkit.BlockRenderInformation import BlockRenderInformation
 
 class DummyPlugin(Plugin):
-    def compile_block(self, high_level_block: HighLevelBlock) -> LowLevelBlockStructure:
+    def _compile_block(self, high_level_block: HighLevelBlock) -> LowLevelBlockStructure:
         # Always returns a dummy block structure
         if high_level_block.block_library != "dummy_library" or high_level_block.block_type != "dummy":
             raise NotImplementedError("Only dummy blocks are handled by this plugin.")

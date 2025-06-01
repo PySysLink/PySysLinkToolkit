@@ -1,4 +1,5 @@
 import asyncio
+import os
 import pathlib
 import yaml
 from typing import Any, Callable, Dict, List
@@ -69,3 +70,9 @@ def get_block_render_information(config_path: str, block_data: Dict[str, Any]) -
         except NotImplementedError:
             continue
     raise RuntimeError(f"No plugin could provide render information for block: {block.block_type}")
+
+
+if __name__ == "__main__":
+    test_dir = os.path.join(os.path.dirname(__file__), "..", "..", "tests", "data")
+    toolkit_config = os.path.join(test_dir, "toolkit_config.yaml")
+    print(get_available_block_libraries(toolkit_config))

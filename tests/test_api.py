@@ -2,6 +2,7 @@ import os
 import pytest
 import yaml
 from pysyslink_toolkit import api
+import asyncio
 
 TEST_DIR = os.path.dirname(__file__)
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "test_outputs")
@@ -79,12 +80,14 @@ def test_simulation_runs_and_callbacks(config_path):
         callback_calls.append((event.value_id, event.simulation_time, event.value))
 
     # Run the simulation
-    result = api.run_simulation(
-        config_path,
-        system_yaml,
-        sim_options_yaml,
-        output_json,
-        display_callback=display_callback
+    result = asyncio.run(
+        api.run_simulation(
+            config_path,
+            system_yaml,
+            sim_options_yaml,
+            output_json,
+            display_callback=display_callback
+        )
     )
 
     assert os.path.exists(output_json)

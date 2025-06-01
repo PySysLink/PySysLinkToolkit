@@ -7,7 +7,7 @@ class NeuronPlugin(pysyslink_toolkit.Plugin):
     def get_block_render_information(self, high_level_block):
         return BlockRenderInformation()    
     
-    def compile_block(self, high_level_block: HighLevelBlock) -> LowLevelBlockStructure:
+    def _compile_block(self, high_level_block: HighLevelBlock) -> LowLevelBlockStructure:
         # Only handle neuron blocks
         if high_level_block.block_library != "neuron_library" or high_level_block.block_type != "neuron":
             raise NotImplementedError("Only neuron blocks are handled by this plugin.")
