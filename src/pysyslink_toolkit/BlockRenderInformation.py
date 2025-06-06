@@ -51,19 +51,24 @@ class BlockRenderInformation:
     max_width: float = 360.0
     max_height: float = 150.0
 
+    input_ports: int = 1
+    output_ports: int = 1
+
     def to_dict(self):
         return {
             "shape": self.shape.value,
             "icon": self.icon,
             "text": self.text,
-            "show_icon_and_text": self.show_icon_and_text,
+            "show_image_and_text": self.show_image_and_text,
             "figure": self.figure.to_dict() if self.figure else None,
             "default_width": self.default_width,
             "default_height": self.default_height,
             "min_width": self.min_width,
             "min_height": self.min_height,
             "max_width": self.max_width,
-            "max_height": self.max_height
+            "max_height": self.max_height,
+            "input_ports": self.input_ports,
+            "output_ports": self.output_ports
         }
 
     def to_json(self):

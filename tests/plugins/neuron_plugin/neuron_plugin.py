@@ -88,3 +88,7 @@ class NeuronPlugin(pysyslink_toolkit.Plugin):
         port_map[("output", 0)] = (adder_id, 0)
 
         return LowLevelBlockStructure(blocks, links, port_map)
+    
+    def _get_block_render_information(self, high_level_block):
+        render_information = BlockRenderInformation()
+        return render_information

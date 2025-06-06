@@ -68,7 +68,9 @@ def get_block_render_information(config_path: str, block_data: Dict[str, Any]) -
         try:
             return plugin.get_block_render_information(block)
         except NotImplementedError:
-            continue
+            raise RuntimeError(f"Something not implemented on plugin")
+        except Exception as e:
+            raise RuntimeError(f"Exception while getting block render information: {e}")
     raise RuntimeError(f"No plugin could provide render information for block: {block.block_type}")
 
 

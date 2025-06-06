@@ -26,8 +26,8 @@ class HighLevelBlock:
             label=data["label"],
             input_ports=data.get("inputPorts", 0),
             output_ports=data.get("outputPorts", 0),
-            block_library=data.get("block_library", 0),
-            block_type=data.get("block_type", 0),
+            block_library=data.get("blockLibrary", "notALibrary"),
+            block_type=data.get("blockType", "notAType"),
             properties=data.get("properties", {}),
         )
 
@@ -37,7 +37,7 @@ class HighLevelBlock:
             "label": self.label,
             "inputPorts": self.input_ports,
             "outputPorts": self.output_ports,
-            "block_library": self.block_library,
-            "block_type": self.block_type,
+            "blockLibrary": self.block_library,
+            "blockType": self.block_type,
             "properties": self.properties,
         }
