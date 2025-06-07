@@ -60,8 +60,8 @@ def test_get_block_render_information(config_path):
         "label": "Test Block",
         "inputPorts": 1,
         "outputPorts": 1,
-        "block_library": "dummy_library",
-        "block_type": "dummy",
+        "blockLibrary": "dummy_library",
+        "blockType": "dummy",
         "properties": {}
     }
     info = api.get_block_render_information(config_path, block_data)

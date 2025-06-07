@@ -6,8 +6,8 @@
       "label": "Test Block",
       "inputPorts": 1,
       "outputPorts": 1,
-      "block_library": "dummy_library",
-      "block_type": "dummy",
+      "blockLibrary": "dummy_library",
+      "blockType": "dummy",
       "properties": {}
     }
   ],

@@ -6,6 +6,38 @@ from pysyslink_toolkit.HighLevelBlock import HighLevelBlock
 from pysyslink_toolkit.LowLevelBlockStructure import LowLevelBlock, LowLevelLink, LowLevelBlockStructure
 from pysyslink_toolkit.load_plugins import load_plugins_from_paths
 
+def compile_high_level_block(block: HighLevelBlock, plugins) -> LowLevelBlockStructure:
+    for plugin in plugins:
+        try:
+            return plugin.compile_block(block)
+        except NotImplementedError:
+            continue
+    raise RuntimeError(f"No plugin could compile block: {block.block_type}")
+
+def format_property_value(prop_type, value):
+    if prop_type == "int":
+        return str(int(value))
+    elif prop_type == "float":
+        return f"{float(value):.1f}"
+    elif prop_type == "double":
+        return f"{float(value):.1f}"
+    elif prop_type == "float[]":
+        return [f"{float(v):.1f}" for v in value]
+    elif prop_type == "double[]":
+        return [f"{float(v):.1f}" for v in value]
+    elif prop_type == "int[]":
+        return [str(int(v)) for v in value]
+    else:
+        return value
+
+def serialize_block(block: LowLevelBlock) -> dict:
+    d = block.to_dict()
+    if "properties" in d:
+        for k, v in d["properties"].items():
+            if isinstance(v, dict) and "type" in v and "value" in v:
+                d["properties"][k]["value"] = format_property_value(v["type"], v["value"])
+    return d
+
 def compile_pslk_to_yaml(pslk_path: str, config_path: str, output_yaml_path: str):
     # Load the .pslk file (JSON)
     with open(pslk_path, "r") as f:
@@ -20,20 +52,13 @@ def compile_pslk_to_yaml(pslk_path: str, config_path: str, output_yaml_path: str
     block_structs: Dict[str, LowLevelBlockStructure] = {}
     for block_data in system_json.get("blocks", []):
         block = HighLevelBlock.from_dict(block_data)
-        for plugin in plugins:
-            try:
-                ll_struct: LowLevelBlockStructure = plugin.compile_block(block)
-                block_structs[block.id] = ll_struct
-                break
-            except NotImplementedError:
-                continue
-        else:
-            raise RuntimeError(f"No plugin could compile block: {block.block_type}")
+        ll_struct = compile_high_level_block(block, plugins)
+        block_structs[block.id] = ll_struct
 
     # Collect all low-level blocks and links
     all_blocks: List[LowLevelBlock] = []
     all_links: List[LowLevelLink] = []
-    port_maps: Dict[str, Dict[str, Any]] = {}  # block_id -> port_map
+    port_maps: Dict[str, Dict[str, Any]] = {}
 
     for block_id, struct in block_structs.items():
         all_blocks.extend(struct.blocks)
@@ -48,7 +73,6 @@ def compile_pslk_to_yaml(pslk_path: str, config_path: str, output_yaml_path: str
         tgt_id = link["targetId"]
         tgt_port = link["targetPort"]
 
-        # Use port maps to resolve to low-level block/port
         src_map = port_maps.get(src_id, {})
         tgt_map = port_maps.get(tgt_id, {})
         src_ll = src_map.get(("output", src_port))
@@ -70,9 +94,9 @@ def compile_pslk_to_yaml(pslk_path: str, config_path: str, output_yaml_path: str
         all_links.append(ll_link)
         link_idx += 1
 
-    # Prepare YAML output
+    # Prepare YAML output with formatted properties
     output = {
-        "Blocks": [block.to_dict() for block in all_blocks],
+        "Blocks": [serialize_block(block) for block in all_blocks],
         "Links": [link.to_dict() for link in all_links],
     }
 

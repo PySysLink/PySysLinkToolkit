@@ -3,12 +3,12 @@ Blocks:
   Name: Gain 1
   BlockType: BasicCpp
   BlockClass: BasicBlocks/Gain
-  Gain: 2.0
+  Gain: 2
 - Id: neuron1_gain1
   Name: Gain 2
   BlockType: BasicCpp
   BlockClass: BasicBlocks/Gain
-  Gain: -1.0
+  Gain: -1
 - Id: neuron1_offset
   Name: Offset
   BlockType: BasicCpp

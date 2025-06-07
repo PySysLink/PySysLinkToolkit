@@ -5,14 +5,20 @@
          "label": "Neuron Block",
          "inputPorts": 3,
          "outputPorts": 1,
-         "block_library": "neuron_library",
-         "block_type": "neuron",
+         "blockLibrary": "neuron_library",
+         "blockType": "neuron",
          "properties": {
-            "gains": [
-               2.0,
-               -1.0
-            ],
-            "offset": 0.5
+            "gains": {
+               "value": [
+                  2,
+                  -1
+               ],
+               "type": "float[]"
+            },
+            "offset": {
+               "value": 0.5,
+               "type": "float"
+            }
          }
       },
       {
@@ -20,13 +26,16 @@
          "label": "Adder Block",
          "inputPorts": 2,
          "outputPorts": 1,
-         "block_library": "core_BasicBlocks",
-         "block_type": "Adder",
+         "blockLibrary": "core_BasicBlocks",
+         "blockType": "Adder",
          "properties": {
-            "Gains": [
-               2.0,
-               -1.0
-            ]
+            "Gains": {
+               "value": [
+                  2,
+                  -1
+               ],
+               "type": "float[]"
+            }
          }
       }
    ],

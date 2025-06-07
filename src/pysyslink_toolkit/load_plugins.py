@@ -20,7 +20,7 @@ def load_plugins_from_paths(plugin_root_paths, include_default_paths=True) -> li
             if config["pluginType"] == "highLevelBlockLibrary":
                 python_filename = config["pythonFilename"]
                 py_path = yaml_file.parent / python_filename
-                module_name = py_path.stem
+                module_name = py_path.stem # py_path.stem is correct, it returns the module name
                 try: 
                     plugins.append(load_plugin_from_file(py_path, module_name, config))
                 except ImportError as e:

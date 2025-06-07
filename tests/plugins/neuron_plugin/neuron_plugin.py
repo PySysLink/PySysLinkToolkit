@@ -13,8 +13,8 @@ class NeuronPlugin(pysyslink_toolkit.Plugin):
             raise NotImplementedError("Only neuron blocks are handled by this plugin.")
 
         n = high_level_block.input_ports
-        gains = high_level_block.properties.get("gains", [1.0] * (n - 1))
-        offset = high_level_block.properties.get("offset", 0.0)
+        gains = high_level_block.properties.get("gains", {}).get("value", [1.0] * (n - 1))
+        offset = high_level_block.properties.get("offset", {}).get("value", 0.0)
 
         blocks = []
         links = []

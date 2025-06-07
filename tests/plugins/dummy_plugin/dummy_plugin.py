@@ -14,5 +14,5 @@ class DummyPlugin(Plugin):
         )
         return LowLevelBlockStructure([block], [], {("output", 0): ("dummy", 0)})
 
-    def get_block_render_information(self, high_level_block: HighLevelBlock) -> BlockRenderInformation:
+    def _get_block_render_information(self, high_level_block: HighLevelBlock) -> BlockRenderInformation:
         return BlockRenderInformation()
