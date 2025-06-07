@@ -10,7 +10,7 @@ async def simulate_system(
     system_yaml_path: str,
     sim_options_yaml_path: str,
     output_filename: str,
-    display_callback: Callable[[str, float, float], None] = None,
+    display_callback: Callable[[pysyslink_base.ValueUpdateBlockEvent], None] = None,
     plugin_dir: str = "/usr/local/lib"
 ) -> dict:
     """
@@ -27,8 +27,11 @@ async def simulate_system(
         The simulation output object.
     """
     # Set up logging
-    pysyslink_base.SpdlogManager.configure_default_logger()
-    pysyslink_base.SpdlogManager.set_log_level(pysyslink_base.LogLevel.off)
+    try:
+        pysyslink_base.SpdlogManager.configure_default_logger()
+    except:
+        pass
+    pysyslink_base.SpdlogManager.set_log_level(pysyslink_base.LogLevel.debug)
 
     # Block events handler (for display updates)
     block_events_handler = pysyslink_base.BlockEventsHandler()

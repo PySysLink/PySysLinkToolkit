@@ -1,6 +1,7 @@
 import asyncio
 import os
 import pathlib
+import pysyslink_base
 import yaml
 from typing import Any, Callable, Dict, List
 
@@ -28,7 +29,7 @@ def compile_system(config_path: str, high_level_system_path: str, output_yaml_pa
 
 async def run_simulation(config_path: str, low_level_system: str, sim_options: str, 
                    output_filename: str, 
-                   display_callback: Callable[[str, float, float], None] = None) -> dict:
+                   display_callback: Callable[[pysyslink_base.ValueUpdateBlockEvent], None] = None) -> dict:
     """
     Run a simulation asynchronously (dummy implementation).
     """

@@ -142,9 +142,10 @@ class CoreBlockPlugin(Plugin):
     def get_base_block(self, block_configuration: dict[str, Any]):
         try:
             pysyslink_base.SpdlogManager.configure_default_logger()
-            pysyslink_base.SpdlogManager.set_log_level(pysyslink_base.LogLevel.off)
         except:
             pass
+        
+        pysyslink_base.SpdlogManager.set_log_level(pysyslink_base.LogLevel.off)
 
         plugin_dir = "/usr/local/lib"
         plugin_loader = pysyslink_base.BlockTypeSupportPluginLoader()
