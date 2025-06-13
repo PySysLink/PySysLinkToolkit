@@ -117,7 +117,7 @@ class CoreBlockPlugin(Plugin):
 
     def _get_block_render_information(self, high_level_block) -> BlockRenderInformation:
         render_information = BlockRenderInformation()
-        render_information.text = high_level_block.label
+        render_information.text = high_level_block.block_type
 
         # --- Convert high-level block to low-level block first ---
         low_level_struct = self._compile_block(high_level_block)
