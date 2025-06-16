@@ -5,9 +5,39 @@ import yaml
 import pysyslink_base
 
 from pysyslink_toolkit.HighLevelBlock import HighLevelBlock
-from pysyslink_toolkit.BlockRenderInformation import BlockRenderInformation
+from pysyslink_toolkit.BlockRenderInformation import BlockRenderInformation, BlockShape
 from pysyslink_toolkit.LowLevelBlockStructure import LowLevelBlock, LowLevelBlockStructure
 
+
+from dataclasses import dataclass, field
+from typing import List, Optional, Union
+
+
+@dataclass
+class ConfigurationValue:
+    name: str
+    defaultValue: Union[float, int, str, List[float], List[int], None]
+    type: str
+
+@dataclass
+class BlockTypeConfig:
+    name: str
+    configurationValues: List[ConfigurationValue] = field(default_factory=list)
+    blockShape: BlockShape = BlockShape.square
+
+@dataclass
+class BlockLibraryConfig:
+    name: str
+    blockTypes: List[BlockTypeConfig] = field(default_factory=list)
+
+@dataclass
+class PluginConfig:
+    pluginName: str
+    pluginType: str
+    blockType: str
+    dynamicLibrary: str
+    blockLibraries: List[BlockLibraryConfig] = field(default_factory=list)
+    # Add more plugin-level properties here as needed
 
 class Plugin(abc.ABC):
     def __init__(self, plugin_yaml: dict):
@@ -21,6 +51,22 @@ class Plugin(abc.ABC):
         self.name = self.config.get("pluginName", "UnnamedPlugin")
         self.plugin_type = self.config.get("pluginType", "")
         self.block_libraries = self.config.get("blockLibraries", [])
+
+    
+    def get_block_type_config(self, block_library_name: str, block_type_name: str) -> Optional[BlockTypeConfig]:
+        for library in self.block_libraries:
+            if library["name"] == block_library_name:
+                for block_type in library.get("blockTypes", []):
+                    if block_type["name"] == block_type_name:
+                        return BlockTypeConfig(
+                            name=block_type["name"],
+                            configurationValues=[
+                                ConfigurationValue(**cv)
+                                for cv in block_type.get("configurationValues", [])
+                            ],
+                            blockShape=BlockShape(block_type.get("blockShape")) if ("blockShape" in block_type.keys()) else BlockShape.square
+                        )
+        return None
 
     def compile_block(self, high_level_block: HighLevelBlock) -> LowLevelBlockStructure:
         return self._compile_block(high_level_block)
@@ -118,6 +164,9 @@ class CoreBlockPlugin(Plugin):
     def _get_block_render_information(self, high_level_block) -> BlockRenderInformation:
         render_information = BlockRenderInformation()
         render_information.text = high_level_block.block_type
+        
+        print("type config: {}".format(self.get_block_type_config(high_level_block.block_library, high_level_block.block_type)))
+        render_information.shape = self.get_block_type_config(high_level_block.block_library, high_level_block.block_type).blockShape
 
         # --- Convert high-level block to low-level block first ---
         low_level_struct = self._compile_block(high_level_block)
