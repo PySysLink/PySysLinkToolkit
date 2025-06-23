@@ -1,0 +1,188 @@
+{
+  "version": 39,
+  "blocks": [
+    {
+      "id": "PSoZXroTzEQnjGXYiheYeZWR1WTQSeJl",
+      "blockLibrary": "core_BasicBlocks",
+      "blockType": "Adder",
+      "label": "Adder",
+      "x": 1024.4726890756301,
+      "y": 565.0421481092437,
+      "inputPorts": 2,
+      "outputPorts": 1,
+      "properties": {
+        "Gains": {
+          "type": "float[]",
+          "value": [
+            1,
+            1
+          ]
+        }
+      },
+      "blockRenderInformation": {
+        "shape": "circle",
+        "icon": "",
+        "text": "Adder",
+        "show_image_and_text": false,
+        "figure": null,
+        "default_width": 120,
+        "default_height": 50,
+        "min_width": 60,
+        "min_height": 25,
+        "max_width": 360,
+        "max_height": 150,
+        "input_ports": 2,
+        "output_ports": 1
+      }
+    },
+    {
+      "id": "nx0MITpddR4PS825bmSZzPmHFqtCAu6b",
+      "blockLibrary": "core_BasicBlocks",
+      "blockType": "Constant",
+      "label": "Constant",
+      "x": 707.0833333333333,
+      "y": 518.5538194444446,
+      "inputPorts": 0,
+      "outputPorts": 1,
+      "properties": {
+        "Value": {
+          "type": "float",
+          "value": "max(4, 5) - 4/3"
+        }
+      },
+      "blockRenderInformation": {
+        "shape": "square",
+        "icon": "",
+        "text": "Constant",
+        "show_image_and_text": false,
+        "figure": null,
+        "default_width": 120,
+        "default_height": 50,
+        "min_width": 60,
+        "min_height": 25,
+        "max_width": 360,
+        "max_height": 150,
+        "input_ports": 0,
+        "output_ports": 1
+      }
+    },
+    {
+      "id": "VsmFcVusEveFq8J2t7FECwq5WHD7liYX",
+      "blockLibrary": "core_BasicBlocks",
+      "blockType": "Display",
+      "label": "Display",
+      "x": 1229.067460317459,
+      "y": 564.4268353174597,
+      "inputPorts": 1,
+      "outputPorts": 0,
+      "properties": {},
+      "blockRenderInformation": {
+        "shape": "square",
+        "icon": "",
+        "text": "Display",
+        "show_image_and_text": false,
+        "figure": null,
+        "default_width": 120,
+        "default_height": 50,
+        "min_width": 60,
+        "min_height": 25,
+        "max_width": 360,
+        "max_height": 150,
+        "input_ports": 1,
+        "output_ports": 0
+      }
+    },
+    {
+      "id": "NTKoQcfqWRVENOkZlgxdPrvZyYKH0Pgn",
+      "blockLibrary": "core_BasicBlocks",
+      "blockType": "Constant",
+      "label": "Constant",
+      "x": 745.8571428571431,
+      "y": 645.8950892857142,
+      "inputPorts": 0,
+      "outputPorts": 1,
+      "properties": {
+        "Value": {
+          "type": "float",
+          "value": 1
+        }
+      },
+      "blockRenderInformation": {
+        "shape": "square",
+        "icon": "",
+        "text": "Constant",
+        "show_image_and_text": false,
+        "figure": null,
+        "default_width": 120,
+        "default_height": 50,
+        "min_width": 60,
+        "min_height": 25,
+        "max_width": 360,
+        "max_height": 150,
+        "input_ports": 0,
+        "output_ports": 1
+      }
+    }
+  ],
+  "links": [
+    {
+      "id": "jgd3QXUQgb5GHcof2626gAD5x4RvTINH",
+      "sourceId": "nx0MITpddR4PS825bmSZzPmHFqtCAu6b",
+      "targetId": "PSoZXroTzEQnjGXYiheYeZWR1WTQSeJl",
+      "sourcePort": 0,
+      "targetPort": 0,
+      "sourceX": 827.0833333333333,
+      "sourceY": 538.5538194444446,
+      "targetX": 1024.4726890756301,
+      "targetY": 585.0421481092437,
+      "intermediateNodes": [
+        {
+          "id": "omWrSfI7cwUMNBLJVAdYoq615lySqe02",
+          "y": 538.5538194444446,
+          "x": 962.5277777777776
+        },
+        {
+          "id": "x4urHJ6RdNayZXHIcMglrNpI1xMkGMT0",
+          "y": 585.0421481092437,
+          "x": 962.5277777777776
+        }
+      ]
+    },
+    {
+      "id": "uXVMriyUjksmwuIhDzStfZd6Whpv1P1G",
+      "sourceId": "PSoZXroTzEQnjGXYiheYeZWR1WTQSeJl",
+      "targetId": "VsmFcVusEveFq8J2t7FECwq5WHD7liYX",
+      "sourcePort": 0,
+      "targetPort": 0,
+      "sourceX": 1144.4726890756301,
+      "sourceY": 585.0421481092437,
+      "targetX": 1229.067460317459,
+      "targetY": 584.4268353174597,
+      "intermediateNodes": []
+    },
+    {
+      "id": "56HgwjlZPQyUwNfhYrJmvIsH810E4uev",
+      "sourceId": "NTKoQcfqWRVENOkZlgxdPrvZyYKH0Pgn",
+      "targetId": "PSoZXroTzEQnjGXYiheYeZWR1WTQSeJl",
+      "sourcePort": 0,
+      "targetPort": 1,
+      "sourceX": 865.8571428571431,
+      "sourceY": 665.8950892857142,
+      "targetX": 1024.4726890756301,
+      "targetY": 605.0421481092437,
+      "intermediateNodes": [
+        {
+          "id": "JFE1Q050zoJkZSkyOj8sEUUhhykdfmjw",
+          "y": 665.8950892857142,
+          "x": 945.1649159663866
+        },
+        {
+          "id": "Ynr37aO1ebtdcOtTDsb1wmMkjuhPXaD3",
+          "y": 605.0421481092437,
+          "x": 945.1649159663866
+        }
+      ]
+    }
+  ],
+  "simulation_configuration": ""
+}

@@ -1,0 +1,41 @@
+Blocks:
+- Id: PSoZXroTzEQnjGXYiheYeZWR1WTQSeJl
+  Name: Adder
+  BlockType: BasicCpp
+  BlockClass: BasicBlocks/Adder
+  Gains:
+  - 1.0
+  - 1.0
+- Id: nx0MITpddR4PS825bmSZzPmHFqtCAu6b
+  Name: Constant
+  BlockType: BasicCpp
+  BlockClass: BasicBlocks/Constant
+  Value: 3.666666666666667
+- Id: VsmFcVusEveFq8J2t7FECwq5WHD7liYX
+  Name: Display
+  BlockType: BasicCpp
+  BlockClass: BasicBlocks/Display
+- Id: NTKoQcfqWRVENOkZlgxdPrvZyYKH0Pgn
+  Name: Constant
+  BlockType: BasicCpp
+  BlockClass: BasicBlocks/Constant
+  Value: 1.0
+Links:
+- Id: jgd3QXUQgb5GHcof2626gAD5x4RvTINH
+  Name: jgd3QXUQgb5GHcof2626gAD5x4RvTINH
+  SourceBlockId: nx0MITpddR4PS825bmSZzPmHFqtCAu6b
+  SourcePortIdx: 0
+  DestinationBlockId: PSoZXroTzEQnjGXYiheYeZWR1WTQSeJl
+  DestinationPortIdx: 0
+- Id: uXVMriyUjksmwuIhDzStfZd6Whpv1P1G
+  Name: uXVMriyUjksmwuIhDzStfZd6Whpv1P1G
+  SourceBlockId: PSoZXroTzEQnjGXYiheYeZWR1WTQSeJl
+  SourcePortIdx: 0
+  DestinationBlockId: VsmFcVusEveFq8J2t7FECwq5WHD7liYX
+  DestinationPortIdx: 0
+- Id: 56HgwjlZPQyUwNfhYrJmvIsH810E4uev
+  Name: 56HgwjlZPQyUwNfhYrJmvIsH810E4uev
+  SourceBlockId: NTKoQcfqWRVENOkZlgxdPrvZyYKH0Pgn
+  SourcePortIdx: 0
+  DestinationBlockId: PSoZXroTzEQnjGXYiheYeZWR1WTQSeJl
+  DestinationPortIdx: 1

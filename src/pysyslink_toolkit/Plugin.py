@@ -111,26 +111,29 @@ class CoreBlockPlugin(Plugin):
                 converted[key] = value  # or raise error if you want strictness
                 continue
             # Convert based on expected_type
-            if expected_type == "float":
-                converted[key] = float(value)
-            elif expected_type == "int":
-                converted[key] = int(value)
-            elif expected_type == "bool":
-                converted[key] = bool(value)
-            elif expected_type == "string":
-                converted[key] = str(value)
-            elif expected_type.endswith("[]") and isinstance(value, list):
-                base_type = expected_type[:-2]
-                if base_type == "float":
-                    converted[key] = [float(v) for v in value]
-                elif base_type == "int":
-                    converted[key] = [int(v) for v in value]
-                elif base_type == "string":
-                    converted[key] = [str(v) for v in value]
+            try:
+                if expected_type == "float":
+                    converted[key] = float(value)
+                elif expected_type == "int":
+                    converted[key] = int(value)
+                elif expected_type == "bool":
+                    converted[key] = bool(value)
+                elif expected_type == "string":
+                    converted[key] = str(value)
+                elif expected_type.endswith("[]") and isinstance(value, list):
+                    base_type = expected_type[:-2]
+                    if base_type == "float":
+                        converted[key] = [float(v) for v in value]
+                    elif base_type == "int":
+                        converted[key] = [int(v) for v in value]
+                    elif base_type == "string":
+                        converted[key] = [str(v) for v in value]
+                    else:
+                        converted[key] = value
                 else:
                     converted[key] = value
-            else:
-                converted[key] = value
+            except Exception as e:
+                raise ValueError(f"Error converting type of property {key} to type {expected_type}, value {value}: {e}")
         return converted
 
     def _get_block_class(self, block_library, block_type) -> str:

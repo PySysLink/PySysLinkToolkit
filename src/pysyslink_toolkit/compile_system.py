@@ -15,20 +15,23 @@ def compile_high_level_block(block: HighLevelBlock, plugins) -> LowLevelBlockStr
     raise RuntimeError(f"No plugin could compile block: {block.block_type}")
 
 def format_property_value(prop_type, value):
-    if prop_type == "int":
-        return str(int(value))
-    elif prop_type == "float":
-        return f"{float(value):.1f}"
-    elif prop_type == "double":
-        return f"{float(value):.1f}"
-    elif prop_type == "float[]":
-        return [f"{float(v):.1f}" for v in value]
-    elif prop_type == "double[]":
-        return [f"{float(v):.1f}" for v in value]
-    elif prop_type == "int[]":
-        return [str(int(v)) for v in value]
-    else:
-        return value
+    try:
+        if prop_type == "int":
+            return str(int(value))
+        elif prop_type == "float":
+            return f"{float(value):.1f}"
+        elif prop_type == "double":
+            return f"{float(value):.1f}"
+        elif prop_type == "float[]":
+            return [f"{float(v):.1f}" for v in value]
+        elif prop_type == "double[]":
+            return [f"{float(v):.1f}" for v in value]
+        elif prop_type == "int[]":
+            return [str(int(v)) for v in value]
+        else:
+            return value
+    except Exception as e:
+        raise ValueError(f"Error while formatting property type {prop_type} value {value}: {e}")
 
 def serialize_block(block: LowLevelBlock) -> dict:
     d = block.to_dict()

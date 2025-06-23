@@ -17,6 +17,10 @@ def pslk_path():
     return os.path.join(TEST_DIR, "data", "dummy.pslk")
 
 @pytest.fixture
+def pslk_path_with_parameters():
+    return os.path.join(TEST_DIR, "data", "parse_parameters.pslk")
+
+@pytest.fixture
 def output_yaml_path(request):
     OUTPUT_DIR = os.path.join(TEST_DIR, "test_outputs")
     os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -25,6 +29,13 @@ def output_yaml_path(request):
 
 def test_compile_system(config_path, pslk_path, output_yaml_path):
     result = api.compile_system(config_path, pslk_path, str(output_yaml_path))
+    assert result == "success"
+    with open(output_yaml_path) as f:
+        content = f.read()
+        assert "Blocks:" in content
+
+def test_compile_system_with_parameters(config_path, pslk_path_with_parameters, output_yaml_path):
+    result = api.compile_system(config_path, pslk_path_with_parameters, str(output_yaml_path))
     assert result == "success"
     with open(output_yaml_path) as f:
         content = f.read()
@@ -66,6 +77,27 @@ def test_get_block_render_information(config_path):
     }
     info = api.get_block_render_information(config_path, block_data)
     assert info is not None
+
+def test_get_block_render_information_with_parameters(config_path):
+    block_data = {
+        "id": "nx0MITpddR4PS825bmSZzPmHFqtCAu6b",
+        "blockLibrary": "core_BasicBlocks",
+        "blockType": "Constant",
+        "label": "Constant",
+        "x": 707.0833333333333,
+        "y": 518.5538194444446,
+        "inputPorts": 0,
+        "outputPorts": 1,
+        "properties": {
+            "Value": {
+            "type": "float",
+            "value": "max(4, 5) - 4/3"
+            }
+        }
+    }
+    info = api.get_block_render_information(config_path, block_data)
+    assert info is not None
+
 
 def test_simulation_runs_and_callbacks(config_path):
     test_dir = os.path.dirname(__file__)

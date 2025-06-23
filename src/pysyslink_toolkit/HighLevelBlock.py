@@ -1,5 +1,23 @@
 from typing import Any, Dict
 
+def safe_eval(expr: str, context: Dict[str, Any] = {}) -> Any:
+    """Evaluate a Python expression safely in a minimal context."""
+    allowed_builtins = {
+        'min': min,
+        'max': max,
+        'abs': abs,
+        'sum': sum,
+        'len': len,
+        'float': float,
+        'int': int,
+        'range': range,
+        # Add math functions if needed
+    }
+    import math
+    safe_globals = {"__builtins__": allowed_builtins, "math": math}
+    safe_globals.update(context)
+    return eval(expr, safe_globals, {})
+
 class HighLevelBlock:
     def __init__(
         self,
@@ -25,6 +43,28 @@ class HighLevelBlock:
         missing = [field for field in required_fields if field not in data]
         if missing:
             raise ValueError(f"Missing required fields in HighLevelBlock: {', '.join(missing)}")
+
+        raw_props = data["properties"]
+        parsed_props = {}
+
+        for key, entry in raw_props.items():
+            ptype = entry.get("type")
+            value = entry.get("value")
+
+            # Evaluate only if it's a string and not a string-typed property
+            if isinstance(value, str) and ptype != "string":
+                try:
+                    evaluated = safe_eval(value)
+                except Exception as e:
+                    raise ValueError(f"Error evaluating property '{key}': {e}")
+            else:
+                evaluated = value
+
+            parsed_props[key] = {
+                "type": ptype,
+                "value": evaluated
+            }
+
         return cls(
             id=data["id"],
             label=data["label"],
@@ -32,7 +72,7 @@ class HighLevelBlock:
             output_ports=data["outputPorts"],
             block_library=data["blockLibrary"],
             block_type=data["blockType"],
-            properties=data["properties"],
+            properties=parsed_props,
         )
 
     def to_dict(self) -> Dict[str, Any]:
