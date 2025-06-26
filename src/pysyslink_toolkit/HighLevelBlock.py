@@ -38,7 +38,7 @@ class HighLevelBlock:
         self.properties = properties
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "HighLevelBlock":
+    def from_dict(cls, data: Dict[str, Any], parameter_environment_namespace: Dict[str, Any]) -> "HighLevelBlock":
         required_fields = ["id", "label", "inputPorts", "outputPorts", "blockLibrary", "blockType", "properties"]
         missing = [field for field in required_fields if field not in data]
         if missing:
@@ -54,7 +54,7 @@ class HighLevelBlock:
             # Evaluate only if it's a string and not a string-typed property
             if isinstance(value, str) and ptype != "string":
                 try:
-                    evaluated = safe_eval(value)
+                    evaluated = eval(value, parameter_environment_namespace, parameter_environment_namespace)
                 except Exception as e:
                     raise ValueError(f"Error evaluating property '{key}': {e}")
             else:

@@ -1,6 +1,8 @@
 import asyncio
+import json
 import os
 import pathlib
+import runpy
 import pysyslink_base
 import yaml
 from typing import Any, Callable, Dict, List
@@ -58,13 +60,37 @@ def get_available_block_libraries(config_path: str) -> List[Dict[str, Any]]:
             libraries.extend(plugin.get_block_libraries())
     return libraries
 
-def get_block_render_information(config_path: str, block_data: Dict[str, Any]) -> BlockRenderInformation:
+def get_block_render_information(config_path: str, block_data: Dict[str, Any], pslk_path: str) -> BlockRenderInformation:
     """
     Return render information for a block.
     """
     config = _load_config(config_path)
     plugins = load_plugins_from_paths(config['plugin_paths'])
-    block = HighLevelBlock.from_dict(block_data)
+
+    with open(pslk_path, "r") as f:
+        system_json = json.load(f)
+
+    initialization_python_script_path = system_json.get("initialization_python_script_path", None)
+
+    # Resolve to absolute path if not already absolute
+    if not os.path.isabs(initialization_python_script_path):
+        pslk_dir = os.path.dirname(os.path.abspath(pslk_path))
+        initialization_python_script_path = os.path.normpath(
+            os.path.join(pslk_dir, initialization_python_script_path)
+        )
+
+    if initialization_python_script_path:
+        if os.path.isfile(initialization_python_script_path) and initialization_python_script_path.endswith(".py"):
+            try:
+                parameter_environment_dict = runpy.run_path(initialization_python_script_path, init_globals={})
+            except Exception as e:
+                raise RuntimeError(f"Initialization script {initialization_python_script_path} load failed") from e
+        else:
+            raise FileNotFoundError(f"Initialization script '{initialization_python_script_path}' not found or not a .py file.")
+    else:
+        raise FileNotFoundError(f"No initialization script provided.")
+
+    block = HighLevelBlock.from_dict(block_data, parameter_environment_dict)
     for plugin in plugins:
         try:
             return plugin.get_block_render_information(block)

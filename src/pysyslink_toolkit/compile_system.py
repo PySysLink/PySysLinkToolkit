@@ -1,12 +1,15 @@
 import json
+import os
+import runpy
 import yaml
 import pathlib
 from typing import Dict, Any, List
+from pysyslink_toolkit.Plugin import Plugin
 from pysyslink_toolkit.HighLevelBlock import HighLevelBlock
 from pysyslink_toolkit.LowLevelBlockStructure import LowLevelBlock, LowLevelLink, LowLevelBlockStructure
 from pysyslink_toolkit.load_plugins import load_plugins_from_paths
 
-def compile_high_level_block(block: HighLevelBlock, plugins) -> LowLevelBlockStructure:
+def compile_high_level_block(block: HighLevelBlock, plugins: list[Plugin]) -> LowLevelBlockStructure:
     for plugin in plugins:
         try:
             return plugin.compile_block(block)
@@ -51,10 +54,31 @@ def compile_pslk_to_yaml(pslk_path: str, config_path: str, output_yaml_path: str
     plugin_paths = config.get("plugin_paths", [])
     plugins = load_plugins_from_paths(plugin_paths)
 
+    initialization_python_script_path = system_json.get("initialization_python_script_path", None)
+
+    # Resolve to absolute path if not already absolute
+    if not os.path.isabs(initialization_python_script_path):
+        pslk_dir = os.path.dirname(os.path.abspath(pslk_path))
+        initialization_python_script_path = os.path.normpath(
+            os.path.join(pslk_dir, initialization_python_script_path)
+        )
+
+    if initialization_python_script_path:
+        if os.path.isfile(initialization_python_script_path) and initialization_python_script_path.endswith(".py"):
+            try:
+                parameter_environment_dict = runpy.run_path(initialization_python_script_path, init_globals={})
+            except Exception as e:
+                raise RuntimeError(f"Initialization script {initialization_python_script_path} load failed") from e
+        else:
+            raise FileNotFoundError(f"Initialization script '{initialization_python_script_path}' not found or not a .py file.")
+    else:
+        raise FileNotFoundError(f"No initialization script provided.")
+
+
     # Compile each high-level block
     block_structs: Dict[str, LowLevelBlockStructure] = {}
     for block_data in system_json.get("blocks", []):
-        block = HighLevelBlock.from_dict(block_data)
+        block = HighLevelBlock.from_dict(block_data, parameter_environment_dict)
         ll_struct = compile_high_level_block(block, plugins)
         block_structs[block.id] = ll_struct
 
