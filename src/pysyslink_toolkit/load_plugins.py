@@ -4,7 +4,7 @@ import inspect
 from pysyslink_toolkit.Plugin import CoreBlockPlugin, Plugin
 import yaml
 
-def load_plugins_from_paths(plugin_root_paths, include_default_paths=True) -> list[Plugin]:
+def load_plugins_from_paths(config_path, plugin_root_paths, include_default_paths=True) -> list[Plugin]:
     plugins = []
     print(plugin_root_paths)
     if include_default_paths:
@@ -12,9 +12,12 @@ def load_plugins_from_paths(plugin_root_paths, include_default_paths=True) -> li
     print(plugin_root_paths)
     for root in plugin_root_paths:
         root_path = pathlib.Path(root)
+        if not root_path.is_absolute():
+            root_path = pathlib.Path(config_path).parent / root_path
+            root_path = root_path.resolve()
         print(root)
         print(root_path)
-        for yaml_file in root_path.glob("*/**/*.pslkp.yaml"):
+        for yaml_file in root_path.glob("**/*.pslkp.yaml"):
             with open(yaml_file, "r") as f:
                 config = yaml.safe_load(f)
             if config["pluginType"] == "highLevelBlockLibrary":

@@ -53,7 +53,7 @@ def get_available_block_libraries(config_path: str) -> List[Dict[str, Any]]:
     Return all available libraries and blocks from loaded plugins.
     """
     config = _load_config(config_path)
-    plugins = load_plugins_from_paths(config['plugin_paths'])
+    plugins = load_plugins_from_paths(config_path, config['plugin_paths'])
     libraries = []
     for plugin in plugins:
         if hasattr(plugin, "get_block_libraries"):
@@ -65,7 +65,7 @@ def get_block_render_information(config_path: str, block_data: Dict[str, Any], p
     Return render information for a block.
     """
     config = _load_config(config_path)
-    plugins = load_plugins_from_paths(config['plugin_paths'])
+    plugins = load_plugins_from_paths(config_path, config['plugin_paths'])
 
     with open(pslk_path, "r") as f:
         system_json = json.load(f)
@@ -100,6 +100,42 @@ def get_block_render_information(config_path: str, block_data: Dict[str, Any], p
             raise RuntimeError(f"Exception while getting block render information: {e}")
     raise RuntimeError(f"No plugin could provide render information for block: {block.block_type}")
 
+def get_block_html(config_path: str, block_data: Dict[str, Any], pslk_path: str) -> str:
+    config = _load_config(config_path)
+    plugins = load_plugins_from_paths(config_path, config['plugin_paths'])
+
+    with open(pslk_path, "r") as f:
+        system_json = json.load(f)
+
+    initialization_python_script_path = system_json.get("initialization_python_script_path", None)
+
+    # Resolve to absolute path if not already absolute
+    if not os.path.isabs(initialization_python_script_path):
+        pslk_dir = os.path.dirname(os.path.abspath(pslk_path))
+        initialization_python_script_path = os.path.normpath(
+            os.path.join(pslk_dir, initialization_python_script_path)
+        )
+
+    if initialization_python_script_path:
+        if os.path.isfile(initialization_python_script_path) and initialization_python_script_path.endswith(".py"):
+            try:
+                parameter_environment_dict = runpy.run_path(initialization_python_script_path, init_globals={})
+            except Exception as e:
+                raise RuntimeError(f"Initialization script {initialization_python_script_path} load failed") from e
+        else:
+            raise FileNotFoundError(f"Initialization script '{initialization_python_script_path}' not found or not a .py file.")
+    else:
+        raise FileNotFoundError(f"No initialization script provided.")
+
+    block = HighLevelBlock.from_dict(block_data, parameter_environment_dict)
+    for plugin in plugins:
+        try:
+            return plugin.get_block_html(block)
+        except NotImplementedError:
+            raise RuntimeError(f"Something not implemented on plugin")
+        except Exception as e:
+            raise RuntimeError(f"Exception while getting block render information: {e}")
+    raise RuntimeError(f"No plugin could provide render information for block: {block.block_type}")
 
 if __name__ == "__main__":
     test_dir = os.path.join(os.path.dirname(__file__), "..", "..", "tests", "data")

@@ -81,9 +81,21 @@ class Plugin(abc.ABC):
     @abc.abstractmethod
     def _get_block_render_information(self, high_level_block: HighLevelBlock) -> BlockRenderInformation:
         pass
+    
+    def get_block_html(self, high_level_block: HighLevelBlock) -> str:
+        html_or_none = self._get_block_html(high_level_block)
+        if html_or_none == None:
+            return f"No HTML for block {high_level_block.label} of type {high_level_block.block_library} {high_level_block.block_type}"
+        else:
+            return html_or_none
+
+    def _get_block_html(self, high_level_block: HighLevelBlock) -> str | None:
+        return None
 
     def get_block_libraries(self):
         return self.block_libraries
+    
+
     
 
 class CoreBlockPlugin(Plugin):

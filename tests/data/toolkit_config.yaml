@@ -1,2 +1,2 @@
 plugin_paths:
-  - tests/plugins
+  - ../plugins
