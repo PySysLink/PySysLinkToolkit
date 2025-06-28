@@ -63,7 +63,7 @@ def test_neuron_block_compilation(config_path, output_yaml_path):
 def test_get_available_block_libraries(config_path):
     libs = api.get_available_block_libraries(config_path)
     assert isinstance(libs, list)
-    assert any(lib["name"] == "dummy_library" for lib in libs)
+    assert any(lib.name == "dummy_library" for lib in libs)
 
 def test_get_block_render_information(config_path):
     block_data = {
@@ -75,7 +75,10 @@ def test_get_block_render_information(config_path):
         "blockType": "dummy",
         "properties": {}
     }
-    info = api.get_block_render_information(config_path, block_data)
+    test_dir = os.path.dirname(__file__)
+    input_pslk = os.path.join(test_dir, "data", "neuron_test.pslk")
+
+    info = api.get_block_render_information(config_path, block_data, input_pslk)
     assert info is not None
 
 def test_get_block_render_information_with_parameters(config_path):
@@ -95,8 +98,35 @@ def test_get_block_render_information_with_parameters(config_path):
             }
         }
     }
-    info = api.get_block_render_information(config_path, block_data)
+    test_dir = os.path.dirname(__file__)
+    input_pslk = os.path.join(test_dir, "data", "neuron_test.pslk")
+    info = api.get_block_render_information(config_path, block_data, input_pslk)
     assert info is not None
+
+def test_get_block_render_information_basic_block(config_path):
+    block_data = {
+        "id":"InIvNfx88BzB6k7e7uL2ODxhMcVDWbH0",
+        "blockLibrary":"core_BasicBlocks",
+        "blockType":"Constant",
+        "label":"Constant",
+        "x":90,
+        "y":146,
+        "inputPorts":1,
+        "outputPorts":1,"properties":{
+            "Value": {
+                "type": "float",
+                "value": 1
+            }
+        }
+    }
+    test_dir = os.path.dirname(__file__)
+    input_pslk = os.path.join(test_dir, "data", "neuron_test.pslk")
+    info = api.get_block_render_information(config_path, block_data, input_pslk)
+    print(info.to_dict())
+    assert info is not None
+    assert info.input_ports == 0
+    assert info.output_ports == 1
+    assert info.text == "Constant"
 
 
 def test_simulation_runs_and_callbacks(config_path):

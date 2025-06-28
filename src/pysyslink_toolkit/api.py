@@ -3,6 +3,7 @@ import json
 import os
 import pathlib
 import runpy
+import traceback
 import pysyslink_base
 import yaml
 from typing import Any, Callable, Dict, List
@@ -10,6 +11,7 @@ from typing import Any, Callable, Dict, List
 from pysyslink_toolkit.HighLevelBlock import HighLevelBlock
 from pysyslink_toolkit.LowLevelBlockStructure import LowLevelBlockStructure
 from pysyslink_toolkit.BlockRenderInformation import BlockRenderInformation
+from pysyslink_toolkit.Plugin import BlockLibraryConfig
 from pysyslink_toolkit.load_plugins import load_plugins_from_paths
 from pysyslink_toolkit.compile_system import compile_pslk_to_yaml
 from pysyslink_toolkit.simulate_system import simulate_system
@@ -27,7 +29,7 @@ def compile_system(config_path: str, high_level_system_path: str, output_yaml_pa
         compile_pslk_to_yaml(high_level_system_path, config_path, output_yaml_path)
         return 'success'
     except Exception as e:
-        return 'failure: {}'.format(e)
+        return 'failure: {}'.format(traceback.format_exc())
 
 async def run_simulation(config_path: str, low_level_system: str, sim_options: str, 
                    output_filename: str, 
@@ -48,13 +50,13 @@ async def run_simulation(config_path: str, low_level_system: str, sim_options: s
 
     return result
 
-def get_available_block_libraries(config_path: str) -> List[Dict[str, Any]]:
+def get_available_block_libraries(config_path: str) -> List[BlockLibraryConfig]:
     """
     Return all available libraries and blocks from loaded plugins.
     """
     config = _load_config(config_path)
     plugins = load_plugins_from_paths(config_path, config['plugin_paths'])
-    libraries = []
+    libraries: list[BlockLibraryConfig] = []
     for plugin in plugins:
         if hasattr(plugin, "get_block_libraries"):
             libraries.extend(plugin.get_block_libraries())
@@ -72,14 +74,13 @@ def get_block_render_information(config_path: str, block_data: Dict[str, Any], p
 
     initialization_python_script_path = system_json.get("initialization_python_script_path", None)
 
-    # Resolve to absolute path if not already absolute
-    if not os.path.isabs(initialization_python_script_path):
-        pslk_dir = os.path.dirname(os.path.abspath(pslk_path))
-        initialization_python_script_path = os.path.normpath(
-            os.path.join(pslk_dir, initialization_python_script_path)
-        )
-
     if initialization_python_script_path:
+        # Resolve to absolute path if not already absolute
+        if not os.path.isabs(initialization_python_script_path):
+            pslk_dir = os.path.dirname(os.path.abspath(pslk_path))
+            initialization_python_script_path = os.path.normpath(
+                os.path.join(pslk_dir, initialization_python_script_path)
+            )
         if os.path.isfile(initialization_python_script_path) and initialization_python_script_path.endswith(".py"):
             try:
                 parameter_environment_dict = runpy.run_path(initialization_python_script_path, init_globals={})
@@ -88,14 +89,16 @@ def get_block_render_information(config_path: str, block_data: Dict[str, Any], p
         else:
             raise FileNotFoundError(f"Initialization script '{initialization_python_script_path}' not found or not a .py file.")
     else:
-        raise FileNotFoundError(f"No initialization script provided.")
+        print(f"No initialization script provided.")
+        parameter_environment_dict = dict()
 
     block = HighLevelBlock.from_dict(block_data, parameter_environment_dict)
     for plugin in plugins:
         try:
+            print(f"Testing plugin {plugin.name}")
             return plugin.get_block_render_information(block)
         except NotImplementedError:
-            raise RuntimeError(f"Something not implemented on plugin")
+            continue
         except Exception as e:
             raise RuntimeError(f"Exception while getting block render information: {e}")
     raise RuntimeError(f"No plugin could provide render information for block: {block.block_type}")
@@ -132,7 +135,7 @@ def get_block_html(config_path: str, block_data: Dict[str, Any], pslk_path: str)
         try:
             return plugin.get_block_html(block)
         except NotImplementedError:
-            raise RuntimeError(f"Something not implemented on plugin")
+            continue
         except Exception as e:
             raise RuntimeError(f"Exception while getting block render information: {e}")
     raise RuntimeError(f"No plugin could provide render information for block: {block.block_type}")

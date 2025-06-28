@@ -8,14 +8,14 @@
          "blockLibrary": "neuron_library",
          "blockType": "neuron",
          "properties": {
-            "gains": {
+            "Gains": {
                "value": [
                   2,
                   -1
                ],
                "type": "float[]"
             },
-            "offset": {
+            "Offset": {
                "value": 0.5,
                "type": "float"
             }

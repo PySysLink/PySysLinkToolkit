@@ -5,3 +5,12 @@ blockLibraries:
   - name: neuron_library
     blockTypes:
       - name: neuron
+        configurationValues:
+          - name: Gains
+            defaultValue:
+            - 1
+            - 1
+            type: float[]
+          - name: Offset
+            defaultValue: 1
+            type: float

@@ -1,11 +1,12 @@
 import importlib.util
 import pathlib
 import inspect
-from pysyslink_toolkit.Plugin import CoreBlockPlugin, Plugin
+from pysyslink_toolkit.CoreBlockPlugin import CoreBlockPlugin
+from pysyslink_toolkit.Plugin import Plugin
 import yaml
 
 def load_plugins_from_paths(config_path, plugin_root_paths, include_default_paths=True) -> list[Plugin]:
-    plugins = []
+    plugins: list[Plugin] = []
     print(plugin_root_paths)
     if include_default_paths:
         plugin_root_paths.append("/usr/local/lib/pysyslink_plugins")
@@ -15,8 +16,6 @@ def load_plugins_from_paths(config_path, plugin_root_paths, include_default_path
         if not root_path.is_absolute():
             root_path = pathlib.Path(config_path).parent / root_path
             root_path = root_path.resolve()
-        print(root)
-        print(root_path)
         for yaml_file in root_path.glob("**/*.pslkp.yaml"):
             with open(yaml_file, "r") as f:
                 config = yaml.safe_load(f)

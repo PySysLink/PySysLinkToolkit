@@ -3,18 +3,13 @@ from pysyslink_toolkit.BlockRenderInformation import BlockRenderInformation
 from pysyslink_toolkit.LowLevelBlockStructure import LowLevelBlock, LowLevelLink, LowLevelBlockStructure
 from pysyslink_toolkit.HighLevelBlock import HighLevelBlock
 
-class NeuronPlugin(pysyslink_toolkit.Plugin):
-    def get_block_render_information(self, high_level_block):
-        return BlockRenderInformation()    
+class NeuronPlugin(pysyslink_toolkit.Plugin):   
     
     def _compile_block(self, high_level_block: HighLevelBlock) -> LowLevelBlockStructure:
-        # Only handle neuron blocks
-        if high_level_block.block_library != "neuron_library" or high_level_block.block_type != "neuron":
-            raise NotImplementedError("Only neuron blocks are handled by this plugin.")
-
         n = high_level_block.input_ports
-        gains = high_level_block.properties.get("gains", {}).get("value", [1.0] * (n - 1))
-        offset = high_level_block.properties.get("offset", {}).get("value", 0.0)
+        gains = high_level_block.properties.get("Gains").get("value")
+        offset = high_level_block.properties.get("Offset").get("value")
+
 
         blocks = []
         links = []
@@ -91,4 +86,9 @@ class NeuronPlugin(pysyslink_toolkit.Plugin):
     
     def _get_block_render_information(self, high_level_block):
         render_information = BlockRenderInformation()
+        gains = high_level_block.properties.get("Gains").get("value")
+
+        render_information.input_ports = len(gains)
+        render_information.output_ports = 1
+
         return render_information
