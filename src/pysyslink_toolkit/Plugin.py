@@ -123,15 +123,15 @@ class Plugin(abc.ABC):
     def _get_block_render_information(self, high_level_block: HighLevelBlock) -> BlockRenderInformation:
         pass
     
-    def get_block_html(self, high_level_block: HighLevelBlock) -> str:
+    def get_block_html(self, high_level_block: HighLevelBlock, pslk_path: str) -> str:
         block_type = self.get_block_type_config(high_level_block.block_library, high_level_block.block_type)
-        html_or_none = self._get_block_html(high_level_block)
+        html_or_none = self._get_block_html(high_level_block, pslk_path)
         if html_or_none == None:
             return f"No HTML for block {high_level_block.label} of type {high_level_block.block_library} {high_level_block.block_type}"
         else:
             return html_or_none
 
-    def _get_block_html(self, high_level_block: HighLevelBlock) -> str | None:
+    def _get_block_html(self, high_level_block: HighLevelBlock, pslk_path: str) -> str | None:
         return None
 
     def get_block_libraries(self):

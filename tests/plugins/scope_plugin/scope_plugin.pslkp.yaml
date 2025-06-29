@@ -1,0 +1,7 @@
+pluginName: scope_plugin
+pluginType: highLevelBlockLibrary
+pythonFilename: scope_plugin.py
+blockLibraries:
+  - name: scope_library
+    blockTypes:
+      - name: scope

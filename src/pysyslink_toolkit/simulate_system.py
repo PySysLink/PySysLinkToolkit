@@ -9,7 +9,6 @@ from typing import Callable, Any
 async def simulate_system(
     system_yaml_path: str,
     sim_options_yaml_path: str,
-    output_filename: str,
     display_callback: Callable[[pysyslink_base.ValueUpdateBlockEvent], None] = None,
     plugin_dir: str = "/usr/local/lib"
 ) -> dict:
@@ -87,6 +86,8 @@ async def simulate_system(
         "block_ids_input_or_output_and_indexes_to_log", []
     )
     simulation_options.solvers_configuration = sim_opts_dict.get("solvers_configuration", {})
+
+    output_filename = sim_opts_dict.get("simulation_output_filename")
     
 
     # Create and run simulation

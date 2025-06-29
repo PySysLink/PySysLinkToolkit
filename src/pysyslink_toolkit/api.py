@@ -32,7 +32,6 @@ def compile_system(config_path: str, high_level_system_path: str, output_yaml_pa
         return 'failure: {}'.format(traceback.format_exc())
 
 async def run_simulation(config_path: str, low_level_system: str, sim_options: str, 
-                   output_filename: str, 
                    display_callback: Callable[[pysyslink_base.ValueUpdateBlockEvent], None] = None) -> dict:
     """
     Run a simulation asynchronously (dummy implementation).
@@ -43,7 +42,6 @@ async def run_simulation(config_path: str, low_level_system: str, sim_options: s
     result = await simulate_system(
         low_level_system,
         sim_options,
-        output_filename,
         display_callback,
         "/usr/local/lib"
     )
@@ -133,7 +131,7 @@ def get_block_html(config_path: str, block_data: Dict[str, Any], pslk_path: str)
     block = HighLevelBlock.from_dict(block_data, parameter_environment_dict)
     for plugin in plugins:
         try:
-            return plugin.get_block_html(block)
+            return plugin.get_block_html(block, pslk_path)
         except NotImplementedError:
             continue
         except Exception as e:
