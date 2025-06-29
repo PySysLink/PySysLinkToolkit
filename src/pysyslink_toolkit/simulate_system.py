@@ -50,10 +50,17 @@ async def simulate_system(
                     )
 
     block_chains = simulation_model.get_direct_block_chains()
+
+    print("Block chains acquired")
+
     ordered_blocks = simulation_model.order_block_chains_onto_free_order(block_chains)
+
+    print("Blocks ordered")
 
     # Propagate sample times
     simulation_model.propagate_sample_times()
+
+    print("Simulation times propagated")
 
     # Load simulation options from YAML
     with open(sim_options_yaml_path, "r") as f:

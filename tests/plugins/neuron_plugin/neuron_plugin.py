@@ -17,14 +17,14 @@ class NeuronPlugin(pysyslink_toolkit.Plugin):
 
         # Create gain blocks for first n-1 inputs
         gain_block_ids = []
-        for i in range(n - 1):
+        for i in range(n):
             gain_id = f"{high_level_block.id}_gain{i}"
             gain_block = LowLevelBlock(
                 id=gain_id,
                 name=f"Gain {i+1}",
                 block_type="BasicCpp",
                 block_class="BasicBlocks/Gain",
-                Gain=gains[i] if i < len(gains) else 1.0
+                Gain=float(gains[i]) if i < len(gains) else 1.0
             )
             blocks.append(gain_block)
             gain_block_ids.append(gain_id)
@@ -38,10 +38,9 @@ class NeuronPlugin(pysyslink_toolkit.Plugin):
             name="Offset",
             block_type="BasicCpp",
             block_class="BasicBlocks/Constant",
-            Value=offset
+            Value=float(offset)
         )
         blocks.append(offset_block)
-        port_map[("input", n - 1)] = (offset_id, 0)
 
         # Adder block
         adder_id = f"{high_level_block.id}_adder"
@@ -50,7 +49,7 @@ class NeuronPlugin(pysyslink_toolkit.Plugin):
             name="Adder",
             block_type="BasicCpp",
             block_class="BasicBlocks/Adder",
-            Gains=[1.0] * n  # All inputs summed
+            Gains=[1.0] * (n + 1)  # All inputs summed
         )
         blocks.append(adder_block)
 
@@ -75,7 +74,7 @@ class NeuronPlugin(pysyslink_toolkit.Plugin):
             source_block_id=offset_id,
             source_port_idx=0,
             destination_block_id=adder_id,
-            destination_port_idx=n - 1
+            destination_port_idx=n
         )
         links.append(link)
 
