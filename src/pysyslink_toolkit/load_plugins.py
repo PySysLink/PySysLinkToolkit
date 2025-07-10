@@ -1,12 +1,21 @@
 import importlib.util
 import pathlib
 import inspect
+from typing import Any, Dict
 from pysyslink_toolkit.CoreBlockPlugin import CoreBlockPlugin
 from pysyslink_toolkit.Plugin import Plugin
 import yaml
 
-def load_plugins_from_paths(config_path, plugin_root_paths, include_default_paths=True) -> list[Plugin]:
+def _load_config(config_path: str | None) -> Dict[str, Any]:
+    if config_path is None:
+        return {}
+    with open(config_path, "r") as f:
+        return yaml.safe_load(f)
+
+def load_plugins_from_paths(config_path, include_default_paths=True) -> list[Plugin]:
     plugins: list[Plugin] = []
+    config = _load_config(config_path)
+    plugin_root_paths = config.get("plugin_paths", [])
     print(plugin_root_paths)
     if include_default_paths:
         plugin_root_paths.append("/usr/local/lib/pysyslink_plugins")

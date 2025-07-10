@@ -16,11 +16,8 @@ from pysyslink_toolkit.load_plugins import load_plugins_from_paths
 from pysyslink_toolkit.compile_system import compile_pslk_to_yaml
 from pysyslink_toolkit.simulate_system import simulate_system
 
-def _load_config(config_path: str) -> Dict[str, Any]:
-    with open(config_path, "r") as f:
-        return yaml.safe_load(f)
 
-def compile_system(config_path: str, high_level_system_path: str, output_yaml_path: str) -> str:
+def compile_system(config_path: str | None, high_level_system_path: str, output_yaml_path: str) -> str:
     """
     Compile a high-level system (dict) to a low-level system (dict).
     """
@@ -31,7 +28,7 @@ def compile_system(config_path: str, high_level_system_path: str, output_yaml_pa
     except Exception as e:
         return 'failure: {}'.format(traceback.format_exc())
 
-async def run_simulation(config_path: str, low_level_system: str, sim_options: str, 
+async def run_simulation(config_path: str | None, low_level_system: str, sim_options: str, 
                    display_callback: Callable[[pysyslink_base.ValueUpdateBlockEvent], None] = None) -> dict:
     """
     Run a simulation asynchronously (dummy implementation).
@@ -48,24 +45,22 @@ async def run_simulation(config_path: str, low_level_system: str, sim_options: s
 
     return result
 
-def get_available_block_libraries(config_path: str) -> List[BlockLibraryConfig]:
+def get_available_block_libraries(config_path: str | None) -> List[BlockLibraryConfig]:
     """
     Return all available libraries and blocks from loaded plugins.
     """
-    config = _load_config(config_path)
-    plugins = load_plugins_from_paths(config_path, config['plugin_paths'])
+    plugins = load_plugins_from_paths(config_path)
     libraries: list[BlockLibraryConfig] = []
     for plugin in plugins:
         if hasattr(plugin, "get_block_libraries"):
             libraries.extend(plugin.get_block_libraries())
     return libraries
 
-def get_block_render_information(config_path: str, block_data: Dict[str, Any], pslk_path: str) -> BlockRenderInformation:
+def get_block_render_information(config_path: str | None, block_data: Dict[str, Any], pslk_path: str) -> BlockRenderInformation:
     """
     Return render information for a block.
     """
-    config = _load_config(config_path)
-    plugins = load_plugins_from_paths(config_path, config['plugin_paths'])
+    plugins = load_plugins_from_paths(config_path)
 
     with open(pslk_path, "r") as f:
         system_json = json.load(f)
@@ -101,9 +96,8 @@ def get_block_render_information(config_path: str, block_data: Dict[str, Any], p
             raise RuntimeError(f"Exception while getting block render information: {e}")
     raise RuntimeError(f"No plugin could provide render information for block: {block.block_type}")
 
-def get_block_html(config_path: str, block_data: Dict[str, Any], pslk_path: str) -> str:
-    config = _load_config(config_path)
-    plugins = load_plugins_from_paths(config_path, config['plugin_paths'])
+def get_block_html(config_path: str | None, block_data: Dict[str, Any], pslk_path: str) -> str:
+    plugins = load_plugins_from_paths(config_path)
 
     with open(pslk_path, "r") as f:
         system_json = json.load(f)

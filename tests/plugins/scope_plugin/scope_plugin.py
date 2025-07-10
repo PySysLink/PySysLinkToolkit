@@ -30,6 +30,8 @@ class NeuronPlugin(pysyslink_toolkit.Plugin):
         render_information.input_ports =1
         render_information.output_ports = 0
 
+        render_information.text = "Scope"
+
         return render_information
     
     def _get_block_html(self, high_level_block, pslk_path):
