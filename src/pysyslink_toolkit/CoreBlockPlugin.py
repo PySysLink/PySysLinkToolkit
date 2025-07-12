@@ -8,8 +8,8 @@ from pysyslink_toolkit.Plugin import Plugin
 
 
 class CoreBlockPlugin(Plugin):
-    def __init__(self, plugin_yaml):
-        super().__init__(plugin_yaml)
+    def __init__(self, plugin_yaml, toolkit_config: dict):
+        super().__init__(plugin_yaml, toolkit_config)
         for block_library in self.block_libraries:
             block_library.name = "core_" + block_library.name
         print(self.config.metadata)
@@ -116,10 +116,16 @@ class CoreBlockPlugin(Plugin):
         
         pysyslink_base.SpdlogManager.set_log_level(pysyslink_base.LogLevel.off)
 
-        plugin_dir = "/usr/local/lib/pysyslink_plugins/block_type_supports/"
+        plugin_dir = self.toolkit_config.get("base_block_type_support_plugin_paths", ["/usr/local/lib/pysyslink_plugins/block_type_supports"])
+        plugin_configuration = self.toolkit_config.get("base_plugin_configuration", {"BasicCppSupport/libraryPluginPath": "/usr/local/lib/pysyslink_plugins"})
+
         plugin_loader = pysyslink_base.BlockTypeSupportPluginLoader()
-        plugin_configuration = {"BasicCppSupport/libraryPluginPath": "/usr/local/lib/pysyslink_plugins"}
-        block_factories = plugin_loader.load_plugins(plugin_dir, plugin_configuration)
+
+        if isinstance(plugin_dir, str):
+            plugin_dir = [plugin_dir]
+        
+        for dir in plugin_dir:
+            block_factories = plugin_loader.load_plugins(dir, plugin_configuration)
 
         block_events_handler = pysyslink_base.BlockEventsHandler()
 

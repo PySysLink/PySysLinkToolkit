@@ -83,7 +83,7 @@ def dict_to_plugin_config(data: dict) -> PluginConfig:
 
 
 class Plugin(abc.ABC):
-    def __init__(self, plugin_yaml: dict):
+    def __init__(self, plugin_yaml: dict, toolkit_config: dict):
         super().__init__()
         if isinstance(plugin_yaml, str):
             plugin_yaml = yaml.safe_load(plugin_yaml)
@@ -95,6 +95,7 @@ class Plugin(abc.ABC):
         self.name = self.config.pluginName
         self.plugin_type = self.config.pluginType
         self.block_libraries = self.config.blockLibraries
+        self.toolkit_config = toolkit_config
 
     
     def get_block_type_config(self, block_library_name: str, block_type_name: str) -> Optional[BlockTypeConfig]:
