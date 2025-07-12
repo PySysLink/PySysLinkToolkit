@@ -116,9 +116,10 @@ class CoreBlockPlugin(Plugin):
         
         pysyslink_base.SpdlogManager.set_log_level(pysyslink_base.LogLevel.off)
 
-        plugin_dir = "/usr/local/lib"
+        plugin_dir = "/usr/local/lib/pysyslink_plugins/block_type_supports/"
         plugin_loader = pysyslink_base.BlockTypeSupportPluginLoader()
-        block_factories = plugin_loader.load_plugins(plugin_dir)
+        plugin_configuration = {"BasicCppSupport/libraryPluginPath": "/usr/local/lib/pysyslink_plugins"}
+        block_factories = plugin_loader.load_plugins(plugin_dir, plugin_configuration)
 
         block_events_handler = pysyslink_base.BlockEventsHandler()
 

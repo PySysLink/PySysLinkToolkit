@@ -147,7 +147,6 @@ def test_simulation_runs_and_callbacks(config_path):
             config_path,
             system_yaml,
             sim_options_yaml,
-            output_json,
             display_callback=display_callback
         )
     )

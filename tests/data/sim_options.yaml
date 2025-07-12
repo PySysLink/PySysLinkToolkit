@@ -11,3 +11,5 @@ solvers_configuration:
     ControlledSolver: rosenbrock4_controller
     AbsoluteTolerance: 1e-8
     RelativeTolerance: 1e-8
+
+simulation_output_filename: simulation_output.json
