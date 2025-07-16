@@ -1,6 +1,6 @@
 [project]
-name = "pysyslink-toolkit"
-version = "0.0.1"
+name = "pysyslink_toolkit"
+version = "0.1.0"
 description = "Toolkit for PySysLink block-based dynamic system simulator"
 authors = [
     { name = "Pello Usabiaga", email = "pellousabiaga@gmail.com" }
@@ -9,7 +9,8 @@ readme = "README.md"
 requires-python = ">=3.8"
 
 dependencies = [
-  "PyYAML>6.0.1"
+  "PyYAML>6.0.1",
+  "pysyslink_base==0.1.0"
 ]
 
 
