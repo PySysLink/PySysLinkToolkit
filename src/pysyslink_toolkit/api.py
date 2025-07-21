@@ -61,7 +61,7 @@ def get_available_block_libraries(config_path: str | None) -> List[BlockLibraryC
             libraries.extend(plugin.get_block_libraries())
     return libraries
 
-def get_block_render_information(config_path: str | None, block_id: str, pslk_path: str) -> BlockRenderInformation:
+def get_block_render_information(config_path: str | None, block_data: Dict[str, Any], pslk_path: str) -> BlockRenderInformation:
     """
     Return render information for a block.
     """
@@ -71,7 +71,7 @@ def get_block_render_information(config_path: str | None, block_id: str, pslk_pa
 
     high_level_system, parameter_environment_dict = HighLevelSystem.from_dict(pslk_path, system_json)
     
-    block = next(hhb for hhb in high_level_system.blocks if hhb.id == block_id)
+    block = HighLevelBlock.from_dict(block_data, parameter_environment_dict)
     for plugin in plugins:
         try:
             print(f"Testing plugin {plugin.name}")
@@ -89,8 +89,7 @@ def get_block_html(config_path: str | None, block_data: Dict[str, Any], pslk_pat
 
     high_level_system, parameter_environment_dict = HighLevelSystem.from_dict(pslk_path, system_json)
     
-    block = next(hhb for hhb in high_level_system.blocks if hhb.id == block_data["id"])
-    
+    block = HighLevelBlock.from_dict(block_data, parameter_environment_dict)    
     for plugin in plugins:
         try:
             return plugin.get_block_html(block, pslk_path)
