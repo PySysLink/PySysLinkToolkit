@@ -9,26 +9,22 @@ import yaml
 from typing import Any, Callable, Dict, List
 
 from pysyslink_toolkit.HighLevelBlock import HighLevelBlock
+from pysyslink_toolkit.HighLevelSystem import HighLevelSystem
 from pysyslink_toolkit.LowLevelBlockStructure import LowLevelBlockStructure
 from pysyslink_toolkit.BlockRenderInformation import BlockRenderInformation
 from pysyslink_toolkit.Plugin import BlockLibraryConfig
 from pysyslink_toolkit.load_plugins import load_plugins_from_paths
 from pysyslink_toolkit.compile_system import compile_pslk_to_yaml
 from pysyslink_toolkit.simulate_system import simulate_system
+from pysyslink_toolkit.TextFileManager import _load_config
 
-def _load_config(config_path: str | None) -> Dict[str, Any]:
-    if config_path is None:
-        return {}
-    with open(config_path, "r") as f:
-        return yaml.safe_load(f)
-
-def compile_system(config_path: str | None, high_level_system_path: str, output_yaml_path: str) -> str:
+def compile_system(config_path: str | None, pslk_path: str, output_yaml_path: str) -> str:
     """
     Compile a high-level system (dict) to a low-level system (dict).
     """
 
     try:
-        compile_pslk_to_yaml(high_level_system_path, config_path, output_yaml_path)
+        compile_pslk_to_yaml(pslk_path, config_path, output_yaml_path)
         return 'success'
     except Exception as e:
         return 'failure: {}'.format(traceback.format_exc())
@@ -65,36 +61,17 @@ def get_available_block_libraries(config_path: str | None) -> List[BlockLibraryC
             libraries.extend(plugin.get_block_libraries())
     return libraries
 
-def get_block_render_information(config_path: str | None, block_data: Dict[str, Any], pslk_path: str) -> BlockRenderInformation:
+def get_block_render_information(config_path: str | None, block_id: str, pslk_path: str) -> BlockRenderInformation:
     """
     Return render information for a block.
     """
     plugins = load_plugins_from_paths(config_path)
 
-    with open(pslk_path, "r") as f:
-        system_json = json.load(f)
+    system_json = _load_config(pslk_path)
 
-    initialization_python_script_path = system_json.get("initialization_python_script_path", None)
-
-    if initialization_python_script_path:
-        # Resolve to absolute path if not already absolute
-        if not os.path.isabs(initialization_python_script_path):
-            pslk_dir = os.path.dirname(os.path.abspath(pslk_path))
-            initialization_python_script_path = os.path.normpath(
-                os.path.join(pslk_dir, initialization_python_script_path)
-            )
-        if os.path.isfile(initialization_python_script_path) and initialization_python_script_path.endswith(".py"):
-            try:
-                parameter_environment_dict = runpy.run_path(initialization_python_script_path, init_globals={})
-            except Exception as e:
-                raise RuntimeError(f"Initialization script {initialization_python_script_path} load failed") from e
-        else:
-            raise FileNotFoundError(f"Initialization script '{initialization_python_script_path}' not found or not a .py file.")
-    else:
-        print(f"No initialization script provided.")
-        parameter_environment_dict = dict()
-
-    block = HighLevelBlock.from_dict(block_data, parameter_environment_dict)
+    high_level_system, parameter_environment_dict = HighLevelSystem.from_dict(pslk_path, system_json)
+    
+    block = next(hhb for hhb in high_level_system.blocks if hhb.id == block_id)
     for plugin in plugins:
         try:
             print(f"Testing plugin {plugin.name}")
@@ -108,30 +85,12 @@ def get_block_render_information(config_path: str | None, block_data: Dict[str, 
 def get_block_html(config_path: str | None, block_data: Dict[str, Any], pslk_path: str) -> str:
     plugins = load_plugins_from_paths(config_path)
 
-    with open(pslk_path, "r") as f:
-        system_json = json.load(f)
+    system_json = _load_config(pslk_path)
 
-    initialization_python_script_path = system_json.get("initialization_python_script_path", None)
-
-    # Resolve to absolute path if not already absolute
-    if not os.path.isabs(initialization_python_script_path):
-        pslk_dir = os.path.dirname(os.path.abspath(pslk_path))
-        initialization_python_script_path = os.path.normpath(
-            os.path.join(pslk_dir, initialization_python_script_path)
-        )
-
-    if initialization_python_script_path:
-        if os.path.isfile(initialization_python_script_path) and initialization_python_script_path.endswith(".py"):
-            try:
-                parameter_environment_dict = runpy.run_path(initialization_python_script_path, init_globals={})
-            except Exception as e:
-                raise RuntimeError(f"Initialization script {initialization_python_script_path} load failed") from e
-        else:
-            raise FileNotFoundError(f"Initialization script '{initialization_python_script_path}' not found or not a .py file.")
-    else:
-        raise FileNotFoundError(f"No initialization script provided.")
-
-    block = HighLevelBlock.from_dict(block_data, parameter_environment_dict)
+    high_level_system, parameter_environment_dict = HighLevelSystem.from_dict(pslk_path, system_json)
+    
+    block = next(hhb for hhb in high_level_system.blocks if hhb.id == block_data["id"])
+    
     for plugin in plugins:
         try:
             return plugin.get_block_html(block, pslk_path)

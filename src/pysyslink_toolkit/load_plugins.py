@@ -5,12 +5,9 @@ from typing import Any, Dict
 from pysyslink_toolkit.CoreBlockPlugin import CoreBlockPlugin
 from pysyslink_toolkit.Plugin import Plugin
 import yaml
+from pysyslink_toolkit.TextFileManager import _load_config
 
-def _load_config(config_path: str | None) -> Dict[str, Any]:
-    if config_path is None:
-        return {}
-    with open(config_path, "r") as f:
-        return yaml.safe_load(f)
+
 
 def load_plugins_from_paths(config_path, include_default_paths=True) -> list[Plugin]:
     plugins: list[Plugin] = []

@@ -8,6 +8,9 @@ from pysyslink_toolkit.Plugin import Plugin
 from pysyslink_toolkit.HighLevelBlock import HighLevelBlock
 from pysyslink_toolkit.LowLevelBlockStructure import LowLevelBlock, LowLevelLink, LowLevelBlockStructure
 from pysyslink_toolkit.load_plugins import load_plugins_from_paths
+from pysyslink_toolkit.TextFileManager import _load_config
+from pysyslink_toolkit.HighLevelSystem import HighLevelSystem
+
 
 def compile_high_level_block(block: HighLevelBlock, plugins: list[Plugin]) -> LowLevelBlockStructure:
     for plugin in plugins:
@@ -46,42 +49,19 @@ def serialize_block(block: LowLevelBlock) -> dict:
 
 def compile_pslk_to_yaml(pslk_path: str, config_path: str, output_yaml_path: str):
     # Load the .pslk file (JSON)
-    with open(pslk_path, "r") as f:
-        system_json = json.load(f)
+    system_json = _load_config(pslk_path)
 
     # Load plugins
     config = yaml.safe_load(open(config_path))
     plugin_paths = config.get("plugin_paths", [])
     plugins = load_plugins_from_paths(config_path, plugin_paths)
 
-    print("All plugins obtained")
-
-    initialization_python_script_path = system_json.get("initialization_python_script_path", None)
-
-
-    if initialization_python_script_path:
-        # Resolve to absolute path if not already absolute
-        if not os.path.isabs(initialization_python_script_path):
-            pslk_dir = os.path.dirname(os.path.abspath(pslk_path))
-            initialization_python_script_path = os.path.normpath(
-                os.path.join(pslk_dir, initialization_python_script_path)
-            )
-        if os.path.isfile(initialization_python_script_path) and initialization_python_script_path.endswith(".py"):
-            try:
-                parameter_environment_dict = runpy.run_path(initialization_python_script_path, init_globals={})
-            except Exception as e:
-                raise RuntimeError(f"Initialization script {initialization_python_script_path} load failed") from e
-        else:
-            raise FileNotFoundError(f"Initialization script '{initialization_python_script_path}' not found or not a .py file.")
-    else:
-        print(f"No initialization script provided.")
-        parameter_environment_dict = dict()
+    high_level_system, parameter_environment_namespace = HighLevelSystem.from_dict(pslk_path, system_json)
 
 
     # Compile each high-level block
     block_structs: Dict[str, LowLevelBlockStructure] = {}
-    for block_data in system_json.get("blocks", []):
-        block = HighLevelBlock.from_dict(block_data, parameter_environment_dict)
+    for block in high_level_system.blocks:
         ll_struct = compile_high_level_block(block, plugins)
         block_structs[block.id] = ll_struct
 
@@ -99,11 +79,11 @@ def compile_pslk_to_yaml(pslk_path: str, config_path: str, output_yaml_path: str
 
     # Now resolve high-level links to low-level links using port maps
     link_idx = 1
-    for link in system_json.get("links", []):
-        src_id = link["sourceId"]
-        src_port = link["sourcePort"]
-        tgt_id = link["targetId"]
-        tgt_port = link["targetPort"]
+    for link in high_level_system.links:
+        src_id = link.source_id
+        src_port = link.source_port
+        tgt_id = link.target_id
+        tgt_port = link.target_port
 
         src_map = port_maps.get(src_id, {})
         tgt_map = port_maps.get(tgt_id, {})
@@ -116,8 +96,8 @@ def compile_pslk_to_yaml(pslk_path: str, config_path: str, output_yaml_path: str
         tgt_block_id, tgt_port_idx = tgt_ll
 
         ll_link = LowLevelLink(
-            id=link.get("id", f"link{link_idx}"),
-            name=link.get("id", f"link{link_idx}"),
+            id=link.id,
+            name=link.id,
             source_block_id=src_block_id,
             source_port_idx=src_port_idx,
             destination_block_id=tgt_block_id,
