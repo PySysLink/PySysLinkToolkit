@@ -135,18 +135,7 @@
       "sourceY": 538.5538194444446,
       "targetX": 1024.4726890756301,
       "targetY": 585.0421481092437,
-      "intermediateNodes": [
-        {
-          "id": "omWrSfI7cwUMNBLJVAdYoq615lySqe02",
-          "y": 538.5538194444446,
-          "x": 962.5277777777776
-        },
-        {
-          "id": "x4urHJ6RdNayZXHIcMglrNpI1xMkGMT0",
-          "y": 585.0421481092437,
-          "x": 962.5277777777776
-        }
-      ]
+      "IntermediateSegments": []
     },
     {
       "id": "uXVMriyUjksmwuIhDzStfZd6Whpv1P1G",
@@ -158,7 +147,7 @@
       "sourceY": 585.0421481092437,
       "targetX": 1229.067460317459,
       "targetY": 584.4268353174597,
-      "intermediateNodes": []
+      "IntermediateSegments": []
     },
     {
       "id": "56HgwjlZPQyUwNfhYrJmvIsH810E4uev",
@@ -170,18 +159,7 @@
       "sourceY": 665.8950892857142,
       "targetX": 1024.4726890756301,
       "targetY": 605.0421481092437,
-      "intermediateNodes": [
-        {
-          "id": "JFE1Q050zoJkZSkyOj8sEUUhhykdfmjw",
-          "y": 665.8950892857142,
-          "x": 945.1649159663866
-        },
-        {
-          "id": "Ynr37aO1ebtdcOtTDsb1wmMkjuhPXaD3",
-          "y": 605.0421481092437,
-          "x": 945.1649159663866
-        }
-      ]
+      "IntermediateSegments": []
     }
   ],
   "simulation_configuration": "sim_options.yaml",

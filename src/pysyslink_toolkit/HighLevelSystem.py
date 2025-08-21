@@ -1,29 +1,44 @@
 
 
+from enum import Enum
 import os
 import runpy
 from typing import Any, Dict, List, Optional, Tuple
 from pysyslink_toolkit.HighLevelBlock import HighLevelBlock
 
-class IntermediateNode:
-    def __init__(self, id: str, x: float, y: float):
+
+class Orientation(Enum):
+    Horizontal = "Horizontal"
+    Vertical = "Vertical"
+    
+    @classmethod
+    def from_string(cls, value: str) -> "Orientation":
+        if value == "Horizontal":
+            return Orientation.Horizontal
+        elif value == "Vertical":
+            return Orientation.Vertical
+        else:
+            raise ValueError(f"Invalid orientation value: {value}")
+
+class IntermediateSegment:
+    def __init__(self, id: str, orientation: Orientation, xOrY: float):
         self.id = id
-        self.x = x
-        self.y = y
+        self.orientation = orientation
+        self.xOrY = xOrY
         
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "IntermediateNode":
-        if not all(k in data for k in ("id", "x", "y")):
-            missing = [k for k in ("id", "x", "y") if k not in data]
-            raise ValueError(f"Missing fields in IntermediateNode: {', '.join(missing)}")
+    def from_dict(cls, data: Dict[str, Any]) -> "IntermediateSegment":
+        if not all(k in data for k in ("id", "orientation", "xOrY")):
+            missing = [k for k in ("id", "orientation", "xOrY") if k not in data]
+            raise ValueError(f"Missing fields in IntermediateSegment: {', '.join(missing)}")
         return cls(
             id=data["id"],
-            x=float(data["x"]),
-            y=float(data["y"]),
+            orientation=Orientation.from_string(data["orientation"]),
+            xOrY=float(data["xOrY"])
         )
 
     def to_dict(self) -> Dict[str, Any]:
-        return {"id": self.id, "x": self.x, "y": self.y}
+        return {"id": self.id, "orientation": self.orientation.value, "xOrY": self.xOrY}
 
 class LinkData:
     def __init__(
@@ -33,14 +48,14 @@ class LinkData:
         source_port: int,
         target_id: str,
         target_port: int,
-        intermediate_nodes: List[IntermediateNode]
+        intermediate_segments: List[IntermediateSegment]
     ):
         self.id = id
         self.source_id = source_id
         self.source_port = source_port
         self.target_id = target_id
         self.target_port = target_port
-        self.intermediate_nodes = intermediate_nodes
+        self.intermediate_segments = intermediate_segments
 
     @classmethod
     def from_dict(
@@ -51,16 +66,16 @@ class LinkData:
         required = [
             "id", "sourceId", "sourcePort",
             "targetId", "targetPort",
-            "intermediateNodes"
+            "intermediateSegments"
         ]
         missing = [f for f in required if f not in data]
         if missing:
             raise ValueError(f"Missing fields in LinkData: {', '.join(missing)}")
 
         # parse intermediate nodes
-        nodes = [
-            IntermediateNode.from_dict(n)
-            for n in data["intermediateNodes"]
+        segments = [
+            IntermediateSegment.from_dict(n)
+            for n in data["intermediateSegments"]
         ]
 
 
@@ -70,7 +85,7 @@ class LinkData:
             source_port=int(data["sourcePort"]),
             target_id=data["targetId"],
             target_port=int(data["targetPort"]),
-            intermediate_nodes=nodes
+            intermediate_segments=segments
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -80,7 +95,7 @@ class LinkData:
             "sourcePort": self.source_port,
             "targetId": self.target_id,
             "targetPort": self.target_port,
-            "intermediateNodes": [n.to_dict() for n in self.intermediate_nodes]
+            "intermediateSegments": [n.to_dict() for n in self.intermediate_segments]
         }
 
 class HighLevelSystem:
