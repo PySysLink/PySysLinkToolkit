@@ -78,33 +78,41 @@ def compile_pslk_to_yaml(pslk_path: str, config_path: str, output_yaml_path: str
         port_maps[block_id] = struct.port_map
 
     # Now resolve high-level links to low-level links using port maps
-    link_idx = 1
     for link in high_level_system.links:
         src_id = link.source_id
         src_port = link.source_port
-        tgt_id = link.target_id
-        tgt_port = link.target_port
 
         src_map = port_maps.get(src_id, {})
-        tgt_map = port_maps.get(tgt_id, {})
         src_ll = src_map.get(("output", src_port))
-        tgt_ll = tgt_map.get(("input", tgt_port))
-        if not src_ll or not tgt_ll:
+        if not src_ll:
             raise RuntimeError(f"Cannot resolve link: {link}")
 
         src_block_id, src_port_idx = src_ll
-        tgt_block_id, tgt_port_idx = tgt_ll
 
-        ll_link = LowLevelLink(
-            id=link.id,
-            name=link.id,
-            source_block_id=src_block_id,
-            source_port_idx=src_port_idx,
-            destination_block_id=tgt_block_id,
-            destination_port_idx=tgt_port_idx,
-        )
-        all_links.append(ll_link)
-        link_idx += 1
+        # Each target in the multi-target structure becomes a low-level link
+        for segment_id, tgt_info in link.target_nodes.items():
+            tgt_id = tgt_info["targetId"]
+            tgt_port = tgt_info["port"]
+
+            tgt_map = port_maps.get(tgt_id, {})
+            tgt_ll = tgt_map.get(("input", tgt_port))
+            if not tgt_ll:
+                raise RuntimeError(
+                    f"Cannot resolve target of link '{link.id}' (segment {segment_id}): "
+                    f"{tgt_id}:{tgt_port} not found in port map"
+                )
+
+            tgt_block_id, tgt_port_idx = tgt_ll
+
+            ll_link = LowLevelLink(
+                id=f"{link.id}_{segment_id}",  # ensure uniqueness
+                name=f"{link.id}_{segment_id}",
+                source_block_id=src_block_id,
+                source_port_idx=src_port_idx,
+                destination_block_id=tgt_block_id,
+                destination_port_idx=tgt_port_idx,
+            )
+            all_links.append(ll_link)
 
     # Prepare YAML output with formatted properties
     output = {

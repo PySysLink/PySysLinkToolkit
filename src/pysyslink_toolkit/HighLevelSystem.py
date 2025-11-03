@@ -20,82 +20,119 @@ class Orientation(Enum):
         else:
             raise ValueError(f"Invalid orientation value: {value}")
 
-class IntermediateSegment:
-    def __init__(self, id: str, orientation: Orientation, xOrY: float):
+class SegmentNode:
+    def __init__(self, id: str, orientation: Orientation, xOrY: float, children: list["SegmentNode"]):
         self.id = id
         self.orientation = orientation
         self.xOrY = xOrY
-        
+        self.children = children
+
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "IntermediateSegment":
-        if not all(k in data for k in ("id", "orientation", "xOrY")):
-            missing = [k for k in ("id", "orientation", "xOrY") if k not in data]
-            raise ValueError(f"Missing fields in IntermediateSegment: {', '.join(missing)}")
+    def from_dict(cls, data: Dict[str, Any]) -> "SegmentNode":
+        required = ("id", "orientation", "xOrY", "children")
+        missing = [k for k in required if k not in data]
+        if missing:
+            raise ValueError(f"Missing fields in SegmentNode: {', '.join(missing)}")
+
         return cls(
             id=data["id"],
             orientation=Orientation.from_string(data["orientation"]),
-            xOrY=float(data["xOrY"])
+            xOrY=float(data["xOrY"]),
+            children=[cls.from_dict(c) for c in data.get("children", [])]
         )
 
-    def to_dict(self) -> Dict[str, Any]:
-        return {"id": self.id, "orientation": self.orientation.value, "xOrY": self.xOrY}
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "orientation": self.orientation.value,
+            "xOrY": self.xOrY,
+            "children": [c.to_dict() for c in self.children],
+        }
 
+class TargetNodeInfo:
+    def __init__(self, target_id: str, port: int, x: float, y: float):
+        self.target_id = target_id
+        self.port = port
+        self.x = x
+        self.y = y
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "TargetNodeInfo":
+        required = ("targetId", "port", "x", "y")
+        missing = [k for k in required if k not in data]
+        if missing:
+            raise ValueError(f"Missing fields in TargetNodeInfo: {', '.join(missing)}")
+
+        return cls(
+            target_id=data["targetId"],
+            port=int(data["port"]),
+            x=float(data["x"]),
+            y=float(data["y"])
+        )
+
+    def to_dict(self):
+        return {
+            "targetId": self.target_id,
+            "port": self.port,
+            "x": self.x,
+            "y": self.y,
+        }
 class LinkData:
     def __init__(
         self,
         id: str,
         source_id: str,
         source_port: int,
-        target_id: str,
-        target_port: int,
-        intermediate_segments: List[IntermediateSegment]
+        source_x: float,
+        source_y: float,
+        segment_node: SegmentNode,
+        target_nodes: Dict[str, TargetNodeInfo]
     ):
         self.id = id
         self.source_id = source_id
         self.source_port = source_port
-        self.target_id = target_id
-        self.target_port = target_port
-        self.intermediate_segments = intermediate_segments
+        self.source_x = source_x
+        self.source_y = source_y
+        self.segment_node = segment_node
+        self.target_nodes = target_nodes
 
     @classmethod
-    def from_dict(
-        cls,
-        data: Dict[str, Any],
-        parameter_environment_namespace: Dict[str, Any],
-    ) -> "LinkData":
+    def from_dict(cls, data: Dict[str, Any], parameter_env=None):
         required = [
             "id", "sourceId", "sourcePort",
-            "targetId", "targetPort",
-            "intermediateSegments"
+            "sourceX", "sourceY",
+            "segmentNode", "targetNodes"
         ]
-        missing = [f for f in required if f not in data]
+        missing = [k for k in required if k not in data]
         if missing:
             raise ValueError(f"Missing fields in LinkData: {', '.join(missing)}")
 
-        # parse intermediate nodes
-        segments = [
-            IntermediateSegment.from_dict(n)
-            for n in data["intermediateSegments"]
-        ]
+        segment_root = SegmentNode.from_dict(data["segmentNode"])
 
+        targets = {
+            seg_id: TargetNodeInfo.from_dict(tgt)
+            for seg_id, tgt in data["targetNodes"].items()
+        }
 
         return cls(
             id=data["id"],
             source_id=data["sourceId"],
             source_port=int(data["sourcePort"]),
-            target_id=data["targetId"],
-            target_port=int(data["targetPort"]),
-            intermediate_segments=segments
+            source_x=float(data["sourceX"]),
+            source_y=float(data["sourceY"]),
+            segment_node=segment_root,
+            target_nodes=targets,
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {
             "id": self.id,
             "sourceId": self.source_id,
             "sourcePort": self.source_port,
-            "targetId": self.target_id,
-            "targetPort": self.target_port,
-            "intermediateSegments": [n.to_dict() for n in self.intermediate_segments]
+            "sourceX": self.source_x,
+            "sourceY": self.source_y,
+            "segmentNode": self.segment_node.to_dict(),
+            "targetNodes": {k: v.to_dict() for k, v in self.target_nodes.items()},
         }
 
 class HighLevelSystem:
