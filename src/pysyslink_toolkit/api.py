@@ -27,6 +27,8 @@ def compile_system(config_path: str | None, pslk_path: str, output_yaml_path: st
         compile_pslk_to_yaml(pslk_path, config_path, output_yaml_path)
         return 'success'
     except Exception as e:
+        print(f"Compilation failed: {e}")
+        print(traceback.format_exc())
         return 'failure: {}'.format(traceback.format_exc())
 
 async def run_simulation(config_path: str | None, low_level_system: str, sim_options: str, 

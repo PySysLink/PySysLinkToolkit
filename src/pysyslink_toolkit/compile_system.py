@@ -91,8 +91,8 @@ def compile_pslk_to_yaml(pslk_path: str, config_path: str, output_yaml_path: str
 
         # Each target in the multi-target structure becomes a low-level link
         for segment_id, tgt_info in link.target_nodes.items():
-            tgt_id = tgt_info["targetId"]
-            tgt_port = tgt_info["port"]
+            tgt_id = tgt_info.target_id
+            tgt_port = tgt_info.port
 
             tgt_map = port_maps.get(tgt_id, {})
             tgt_ll = tgt_map.get(("input", tgt_port))
