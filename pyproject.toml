@@ -1,6 +1,6 @@
 [project]
 name = "pysyslink_toolkit"
-version = "0.1.0"
+version = "0.2.0"
 description = "Toolkit for PySysLink block-based dynamic system simulator"
 authors = [
     { name = "Pello Usabiaga", email = "pellousabiaga@gmail.com" }
