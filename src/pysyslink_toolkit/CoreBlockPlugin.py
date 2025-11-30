@@ -102,9 +102,13 @@ class CoreBlockPlugin(Plugin):
         block_configuration["Name"] = low_level_block.name
         block_configuration["Id"] = low_level_block.id
 
-        base_block = self.get_base_block(block_configuration)
-        render_information.input_ports = len(base_block.get_input_ports())
-        render_information.output_ports = len(base_block.get_output_ports())
+        if "InputPortNumber" in low_level_block.extra and "OutputPortNumber" in low_level_block.extra:
+            render_information.input_ports = low_level_block.extra["InputPortNumber"]
+            render_information.output_ports = low_level_block.extra["OutputPortNumber"]
+        else:
+            base_block = self.get_base_block(block_configuration)
+            render_information.input_ports = len(base_block.get_input_ports())
+            render_information.output_ports = len(base_block.get_output_ports())
         return render_information
 
     
