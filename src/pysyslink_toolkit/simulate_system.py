@@ -5,6 +5,7 @@ import time
 import pysyslink_base
 import yaml
 from typing import Callable, Any    
+import os
 
 async def simulate_system(
     system_yaml_path: str,
@@ -95,11 +96,20 @@ async def simulate_system(
     simulation_options.solvers_configuration = sim_opts_dict.get("solvers_configuration", {})
 
     output_filename = sim_opts_dict.get("simulation_output_filename")
-    
+    if output_filename:
+        if not os.path.isabs(output_filename):
+            system_dir = os.path.dirname(system_yaml_path)
+            output_filename = os.path.normpath(os.path.join(system_dir, output_filename))
+    else:
+        output_filename = os.path.join(os.path.dirname(system_yaml_path), "simulation_output.yaml")
+
+    print("Before simulation")
 
     # Create and run simulation
     simulation_manager = pysyslink_base.SimulationManager(simulation_model, simulation_options)
     simulation_output = simulation_manager.run_simulation()
+
+    print("Simulation completed")
 
     # Save output to YAML
     with open(output_filename, "w") as f:
