@@ -5,13 +5,13 @@ from typing import Any, Dict
 from pysyslink_toolkit.CoreBlockPlugin import CoreBlockPlugin
 from pysyslink_toolkit.Plugin import Plugin
 import yaml
-from pysyslink_toolkit.TextFileManager import _load_config
+from pysyslink_toolkit.TextFileManager import _load_config, _load_toolkit_config
 
 
 
 def load_plugins_from_paths(config_path, include_default_paths=True) -> list[Plugin]:
     plugins: list[Plugin] = []
-    toolkit_config = _load_config(config_path)
+    toolkit_config = _load_toolkit_config(config_path)
     plugin_root_paths = toolkit_config.get("plugin_paths", [])
     print(plugin_root_paths)
     if include_default_paths:

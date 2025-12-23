@@ -8,7 +8,7 @@ from pysyslink_toolkit.Plugin import Plugin
 from pysyslink_toolkit.HighLevelBlock import HighLevelBlock
 from pysyslink_toolkit.LowLevelBlockStructure import LowLevelBlock, LowLevelLink, LowLevelBlockStructure
 from pysyslink_toolkit.load_plugins import load_plugins_from_paths
-from pysyslink_toolkit.TextFileManager import _load_config
+from pysyslink_toolkit.TextFileManager import _load_config, _load_toolkit_config
 from pysyslink_toolkit.HighLevelSystem import HighLevelSystem
 
 
@@ -52,7 +52,7 @@ def compile_pslk_to_yaml(pslk_path: str, config_path: str, output_yaml_path: str
     system_json = _load_config(pslk_path)
 
     # Load plugins
-    config = yaml.safe_load(open(config_path))
+    config = _load_toolkit_config(config_path)
     plugin_paths = config.get("plugin_paths", [])
     plugins = load_plugins_from_paths(config_path, plugin_paths)
 

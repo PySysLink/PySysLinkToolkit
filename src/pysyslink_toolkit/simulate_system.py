@@ -10,9 +10,9 @@ import os
 async def simulate_system(
     system_yaml_path: str,
     sim_options_yaml_path: str,
+    plugin_configuration: dict[str, Any],
     display_callback: Callable[[pysyslink_base.ValueUpdateBlockEvent], None] = None,
-    plugin_dir: str | list[str] = "/usr/local/lib/pysyslink_plugins/block_type_supports/",
-    plugin_configuration: dict[str, Any] = {"BasicCppSupport/libraryPluginPath": "/usr/local/lib/pysyslink_plugins"}
+    plugin_dir: str | list[str] = "/usr/local/lib/pysyslink_plugins/block_type_supports/"    
 ) -> dict:
     """
     Simulate a system using PySysLinkBase Python bindings.

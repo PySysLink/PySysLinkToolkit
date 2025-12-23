@@ -16,7 +16,7 @@ from pysyslink_toolkit.Plugin import BlockLibraryConfig
 from pysyslink_toolkit.load_plugins import load_plugins_from_paths
 from pysyslink_toolkit.compile_system import compile_pslk_to_yaml
 from pysyslink_toolkit.simulate_system import simulate_system
-from pysyslink_toolkit.TextFileManager import _load_config
+from pysyslink_toolkit.TextFileManager import _load_config, _load_toolkit_config
 
 def compile_system(config_path: str | None, pslk_path: str, output_yaml_path: str) -> str:
     """
@@ -39,15 +39,15 @@ async def run_simulation(config_path: str | None, low_level_system: str, sim_opt
     # This is a placeholder. You would implement your simulation logic here.
     # For now, just return a dummy result.
 
-    config = _load_config(config_path)
+    config = _load_toolkit_config(config_path)
     plugin_paths = config.get("base_block_type_support_plugin_paths", ["/usr/local/lib/pysyslink_plugins/block_type_supports"])
-    plugin_configuration = config.get("base_plugin_configuration", {"BasicCppSupport/libraryPluginPath": "/usr/local/lib/pysyslink_plugins"})
+    plugin_configuration = config.get("base_plugin_configuration")
     result = await simulate_system(
-        low_level_system,
-        sim_options,
-        display_callback,
-        plugin_paths,
-        plugin_configuration
+        system_yaml_path=low_level_system,
+        sim_options_yaml_path=sim_options,
+        display_callback=display_callback,
+        plugin_dir=plugin_paths,
+        plugin_configuration=plugin_configuration
     )
 
     return result
