@@ -56,7 +56,7 @@ class NeuronPlugin(pysyslink_toolkit.Plugin):
                 system_dir = os.path.dirname(pslk_path)
                 output_filename = os.path.normpath(os.path.join(system_dir, output_filename))
         else:
-            output_filename = os.path.join(os.path.dirname(pslk_path), "simulation_output.yaml")
+            output_filename = os.path.join(os.path.dirname(pslk_path), "simulation_output.json")
 
         if not output_filename:
             return "No simulation output filename found in configuration."

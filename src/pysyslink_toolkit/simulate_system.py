@@ -1,11 +1,14 @@
 import faulthandler
-import re; faulthandler.enable()
+import re
+import subprocess; faulthandler.enable()
 import json
 import time
 import pysyslink_base
 import yaml
 from typing import Callable, Any    
 import os
+
+
 
 async def simulate_system(
     system_yaml_path: str,
@@ -27,128 +30,92 @@ async def simulate_system(
     Returns:
         The simulation output object.
     """
-    # Set up logging
-    try:
-        pysyslink_base.SpdlogManager.configure_default_logger()
-    except:
-        pass
-    pysyslink_base.SpdlogManager.set_log_level(pysyslink_base.LogLevel.debug)
 
-    # Block events handler (for display updates)
-    block_events_handler = pysyslink_base.BlockEventsHandler()
-    print(pysyslink_base.BlockEventsHandler.register_value_update_block_event_callback)
-    block_events_handler.register_value_update_block_event_callback(display_callback)
+    print(f"Sim options yaml path: {sim_options_yaml_path}")
+    with open(sim_options_yaml_path, 'r') as stream:
+        sim_opts = yaml.safe_load(stream)
+    print(f"Sim options: {sim_opts}")
 
-    # Load plugins
-    plugin_loader = pysyslink_base.BlockTypeSupportPluginLoader()
-
-    if isinstance(plugin_dir, str):
+    if type(plugin_dir) == str:
         plugin_dir = [plugin_dir]
-    
-    for dir in plugin_dir:
-        block_factories = plugin_loader.load_plugins(dir, plugin_configuration)
-    
-    print(system_yaml_path)
 
+    options = {
+        "StartTime": sim_opts.get("start_time", 0.0),
+        "StopTime": sim_opts.get("stop_time", 10.0),
+        "RunInNaturalTime": sim_opts.get("run_in_natural_time", False),
+        "NaturalTimeSpeedMultiplier": sim_opts.get(
+            "natural_time_speed_multiplier", 1.0
+        ),
+        "SolversConfiguration": sim_opts.get("solvers_configuration", {}),
+        "BlockIdsInputOrOutputAndIndexesToLog": sim_opts.get(
+            "block_ids_input_or_output_and_indexes_to_log", []
+        ),
+        "PluginDirs": plugin_dir,
+        "PluginConfiguration": plugin_configuration,
+        "SaveToJson": True,
 
-    # Parse the simulation model
-    simulation_model = pysyslink_base.ModelParser.parse_from_yaml(
-                        system_yaml_path, block_factories, block_events_handler
-                    )
+    }
 
-    block_chains = simulation_model.get_direct_block_chains()
+    output_filename = sim_opts.get("simulation_output_filename")
 
-    print("Block chains acquired")
-
-    ordered_blocks = simulation_model.order_block_chains_onto_free_order(block_chains)
-
-    print("Blocks ordered")
-
-    # Propagate sample times
-    simulation_model.propagate_sample_times()
-
-    print("Simulation times propagated")
-
-    # Load simulation options from YAML
-    with open(sim_options_yaml_path, "r") as f:
-        # This follows https://stackoverflow.com/questions/58434563/difference-between-yaml-load-and-yaml-safeloader-in-pyyaml to fix floating point on scientific notation
-        loader = yaml.SafeLoader
-        loader.add_implicit_resolver(
-            u'tag:yaml.org,2002:float',
-            re.compile(u'''^(?:
-            [-+]?(?:[0-9][0-9_]*)\\.[0-9_]*(?:[eE][-+]?[0-9]+)?
-            |[-+]?(?:[0-9][0-9_]*)(?:[eE][-+]?[0-9]+)
-            |\\.[0-9_]+(?:[eE][-+][0-9]+)?
-            |[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\\.[0-9_]*
-            |[-+]?\\.(?:inf|Inf|INF)
-            |\\.(?:nan|NaN|NAN))$''', re.X),
-            list(u'-+0123456789.'))
-        sim_opts_dict = yaml.load(f, Loader=loader)
-
-    simulation_options = pysyslink_base.SimulationOptions()
-    simulation_options.start_time = sim_opts_dict.get("start_time", 0.0)
-    simulation_options.stop_time = sim_opts_dict.get("stop_time", 10.0)
-    simulation_options.run_in_natural_time = sim_opts_dict.get("run_in_natural_time", False)
-    simulation_options.natural_time_speed_multiplier = sim_opts_dict.get("natural_time_speed_multiplier", 1)
-    simulation_options.block_ids_input_or_output_and_indexes_to_log = sim_opts_dict.get(
-        "block_ids_input_or_output_and_indexes_to_log", []
-    )
-    simulation_options.solvers_configuration = sim_opts_dict.get("solvers_configuration", {})
-
-    output_filename = sim_opts_dict.get("simulation_output_filename")
     if output_filename:
         if not os.path.isabs(output_filename):
             system_dir = os.path.dirname(system_yaml_path)
-            output_filename = os.path.normpath(os.path.join(system_dir, output_filename))
+            output_filename = os.path.normpath(
+                os.path.join(system_dir, output_filename)
+            )
     else:
-        output_filename = os.path.join(os.path.dirname(system_yaml_path), "simulation_output.yaml")
+        output_filename = os.path.join(
+            os.path.dirname(system_yaml_path),
+            "simulation_output.json"
+        )
 
-    print("Before simulation")
-
-    # Create and run simulation
-    simulation_manager = pysyslink_base.SimulationManager(simulation_model, simulation_options)
-    simulation_output = simulation_manager.run_simulation()
-
-    print("Simulation completed")
-
-    # Save output to YAML
-    with open(output_filename, "w") as f:
-        all_signals = {}
-        for signal_group, signals in simulation_output.signals.items():
-            all_signals[signal_group] = {}
-            for signal_name, signal_obj in signals.items():
-                typed_signal = signal_obj.try_cast_to_typed()
-                print("Signal group: {}, signal name: {}".format(signal_group, signal_name))
-                all_signals[signal_group][signal_name] = {
-                    "times": getattr(typed_signal, "times", []),
-                    "values": getattr(typed_signal, "values", [])
-                }
-        json.dump(all_signals, f, indent=2)
-        return all_signals
+    options["OutputJsonFile"] = output_filename
 
 
-    
-
-
-
-if __name__ == "__main__":
-    import os
-
-    # Use test data files for debugging
-    test_dir = os.path.join(os.path.dirname(__file__), "..", "..", "tests", "data")
-    system_yaml_path = os.path.join(test_dir, "simulable_system.yaml")
-    sim_options_yaml_path = os.path.join(test_dir, "sim_options.yaml")
-    output_yaml_path = os.path.join(os.path.dirname(__file__), "..", "..", "tests", "test_outputs", "output_debug_simulation.yaml")
-
-    os.makedirs(os.path.dirname(output_yaml_path), exist_ok=True)
-
-    def debug_display_callback(event):
-        print("[Python]:{},{},{}".format(event.value_id, event.simulation_time, event.value))
-
-    simulate_system(
-        system_yaml_path,
-        sim_options_yaml_path,
-        output_yaml_path,
-        display_callback=debug_display_callback
+    options_yaml_path_relative = "lowLevelOptions.yaml" 
+    system_dir = os.path.dirname(system_yaml_path)
+    options_yaml_path = os.path.normpath(
+        os.path.join(system_dir, options_yaml_path_relative)
     )
-    print("outside")
+    with open(options_yaml_path, "w") as f:
+        yaml.safe_dump(options, f, sort_keys=False)
+
+    cmd = ["PySysLinkBase", "--verbose"]
+
+    # if verbose:
+    #     cmd.append("--verbose")
+
+    cmd.extend([system_yaml_path, options_yaml_path])
+
+    result = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+
+    if result.returncode != 0:
+        with open("stdout.txt", "w") as f:
+            f.write(result.stdout)
+        with open("stderr.txt", "w") as f:
+            f.write(result.stderr)
+        raise RuntimeError(
+            "PySysLinkBase failed\n"
+            f"STDOUT:\n{result.stdout}\n"
+            f"STDERR:\n{result.stderr}"
+        )
+
+       # Save output to YAML
+    with open(output_filename, "r") as f:
+        signals = json.load(f)
+        # for signal_group in signals:
+        #     for signal in signals[signal_group]:
+        #         print("--------")
+        #         print(signal_group)
+        #         print(signal)
+        #         print(signals[signal_group][signal])
+        return signals
+    
+    return result.stdout
+    
