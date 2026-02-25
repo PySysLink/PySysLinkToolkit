@@ -95,11 +95,13 @@ async def simulate_system(
         text=True
     )
 
+    with open("stdout.txt", "w") as f:
+        f.write(result.stdout)
+    with open("stderr.txt", "w") as f:
+        f.write(result.stderr)
+
     if result.returncode != 0:
-        with open("stdout.txt", "w") as f:
-            f.write(result.stdout)
-        with open("stderr.txt", "w") as f:
-            f.write(result.stderr)
+        
         raise RuntimeError(
             "PySysLinkBase failed\n"
             f"STDOUT:\n{result.stdout}\n"
