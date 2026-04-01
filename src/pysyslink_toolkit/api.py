@@ -13,7 +13,7 @@ from pysyslink_toolkit.LowLevelBlockStructure import LowLevelBlockStructure
 from pysyslink_toolkit.BlockRenderInformation import BlockRenderInformation
 from pysyslink_toolkit.block_libraries.BlockLibraryPlugin import BlockLibraryPlugin
 from pysyslink_toolkit.block_libraries.BlockLibraryPluginConfig import BlockLibraryConfig
-from pysyslink_toolkit.block_libraries.ParseBlockLibraries import load_block_library_plugins_from_paths
+from pysyslink_toolkit.block_libraries.ParseBlockLibraries import load_block_library_plugins_from_paths, resolve_block_libraries
 from pysyslink_toolkit.compile_system import compile_pslk_to_yaml
 from pysyslink_toolkit.simulate_system import simulate_system
 from pysyslink_toolkit.TextFileManager import load_yaml_file
@@ -60,7 +60,7 @@ def get_available_block_libraries(toolkit_config_path: str | None) -> List[Block
     libraries: list[BlockLibraryConfig] = []
     for plugin in block_library_plugins:
         libraries.extend(plugin.block_library_plugin_config.blockLibraries)
-    return libraries
+    return resolve_block_libraries(libraries)
 
 def get_block_render_information(toolkit_config_path: str | None, block_data: Dict[str, Any], pslk_path: str) -> BlockRenderInformation:
     """

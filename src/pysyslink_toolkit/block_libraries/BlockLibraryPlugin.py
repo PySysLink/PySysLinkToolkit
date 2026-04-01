@@ -36,10 +36,22 @@ class BlockLibraryPlugin(abc.ABC):
         self.get_block_type_config(high_level_block.block_library, high_level_block.block_type)
         return self._get_block_render_information(high_level_block)
 
-    @abc.abstractmethod
     def _get_block_render_information(self, high_level_block: HighLevelBlock) -> BlockRenderInformation:
-        pass
+        render_information = BlockRenderInformation()
+        render_information.text = high_level_block.block_type
+        
+        block_type_config = self.get_block_type_config(high_level_block.block_library, high_level_block.block_type)
+        render_information.shape = block_type_config.blockShape
+
+        # high_level_block.input_ports and .output_ports are originated from calls to this function, don't feedback
+
+        configuration_values = {param_name: high_level_block.properties[param_name]["value"] for param_name in high_level_block.properties.keys()}
+        print(f"configuration values for block: {configuration_values}")
+        render_information.input_ports, render_information.output_ports = block_type_config.get_port_number(configuration_values)
+        
+        return render_information
     
+
     def get_block_html(self, high_level_block: HighLevelBlock, pslk_path: str) -> str:
         self.get_block_type_config(high_level_block.block_library, high_level_block.block_type)
         html_or_none = self._get_block_html(high_level_block, pslk_path)

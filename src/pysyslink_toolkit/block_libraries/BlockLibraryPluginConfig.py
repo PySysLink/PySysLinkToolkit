@@ -1,5 +1,6 @@
+import ast
 import enum
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 import yaml
 
 
@@ -11,6 +12,7 @@ from pysyslink_toolkit.LowLevelBlockStructure import LowLevelBlock, LowLevelBloc
 from dataclasses import dataclass, field
 from typing import List, Optional, Union
 
+from pysyslink_toolkit.block_libraries.SafeEvaluator import SafeEvaluator
 
 @dataclass
 class ConfigurationValue:
@@ -27,6 +29,39 @@ class BlockTypeConfig:
     configurationValues: Dict[str, ConfigurationValue] = field(default_factory=dict)
     blockShape: BlockShape = BlockShape.square
     metadata: dict = field(default_factory=dict)
+
+    def get_port_number(self, configuration_values: Dict[str, any]) -> Tuple[int, int]:
+        result = [None, None]
+        if type(self.inputPortNumber) is int:
+            result[0] = self.inputPortNumber
+        else:
+            result[0] = self.parse_port_number_expression(self.inputPortNumber, configuration_values)
+        
+        if type(self.outputPortNumber) is int:
+            result[1] = self.outputPortNumber
+        else:
+            result[1] = self.parse_port_number_expression(self.outputPortNumber, configuration_values)
+        
+        return tuple(result)
+    
+    def parse_port_number_expression(self, port_number_expression: str, configuration_values: Dict[str, any]) -> int:
+        try:
+            tree = ast.parse(port_number_expression, mode="eval")
+            evaluator = SafeEvaluator(configuration_values)
+            result = evaluator.visit(tree)
+
+            if not isinstance(result, int):
+                result = int(result)
+
+            if result < 0:
+                raise ValueError("Port number cannot be negative")
+
+            return result
+
+        except Exception as e:
+            raise ValueError(
+                f"Error parsing expression '{port_number_expression}': {e}"
+            )
 
 @dataclass
 class BlockLibraryConfig:

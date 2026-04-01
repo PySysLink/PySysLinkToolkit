@@ -13,8 +13,5 @@ blockLibraries:
             - 1
             - 1
             type: float[]
-          - name: Offset
-            defaultValue: 1
-            type: float
-        inputPortNumber: 2
+        inputPortNumber: len(Gains) + 1
         outputPortNumber: 1

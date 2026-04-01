@@ -79,25 +79,6 @@ class CoreBlockLibraryPlugin(BlockLibraryPlugin):
             port_map[("output", i)] = (low_level_block.id, i)
         return LowLevelBlockStructure([low_level_block], [], port_map)
 
-    def _get_block_render_information(self, high_level_block) -> BlockRenderInformation:
-        render_information = BlockRenderInformation()
-        render_information.text = high_level_block.block_type
-        
-        print("type config: {}".format(self.get_block_type_config(high_level_block.block_library, high_level_block.block_type)))
-        render_information.shape = self.get_block_type_config(high_level_block.block_library, high_level_block.block_type).blockShape
 
-        # --- Convert high-level block to low-level block first ---
-        low_level_struct = self._compile_block(high_level_block)
-        if not low_level_struct.blocks:
-            raise ValueError("No low-level blocks generated from high-level block.")
-
-
-        print(f"High level block: {high_level_block.to_dict()}")
-
-
-        render_information.input_ports = high_level_block.input_ports
-        render_information.output_ports = high_level_block.output_ports
-        
-        return render_information
 
     

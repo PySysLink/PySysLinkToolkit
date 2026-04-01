@@ -1,7 +1,8 @@
+from ast import Dict
 import importlib
 import inspect
 import pathlib
-from typing import List
+from typing import Any, List
 import os
 import glob
 import yaml
@@ -106,6 +107,58 @@ def load_block_library_plugins_from_paths(paths: List[str]) -> list[BlockLibrary
 
             
     return plugins
+
+def resolve_block_libraries(libraries: List[BlockLibraryConfig]) -> List[BlockLibraryConfig]:
+    resolved_libraries: List[BlockLibraryConfig] = []
+
+    for lib in libraries:
+        resolved_block_types: List[BlockTypeConfig] = []
+
+        for block in lib.blockTypes:
+            # 1. Build configuration values dict
+            config_values: Dict[str, Any] = {}
+
+            for name, cfg in block.configurationValues.items():
+                if cfg.defaultValue is not None:
+                    config_values[name] = cfg.defaultValue
+                else:
+                    # Fallbacks based on type
+                    if cfg.type.endswith("[]"):
+                        config_values[name] = [1]
+                    elif cfg.type in ("int", "float"):
+                        config_values[name] = 1
+                    else:
+                        config_values[name] = 1  # safe fallback
+
+            # 2. Resolve ports
+            try:
+                input_ports, output_ports = block.get_port_number(config_values)
+            except Exception as e:
+                raise ValueError(
+                    f"Error resolving block '{block.name}' in library '{lib.name}': {e}"
+                )
+
+            # 3. Create resolved copy
+            resolved_block = BlockTypeConfig(
+                name=block.name,
+                inputPortNumber=input_ports,
+                outputPortNumber=output_ports,
+                configurationValues=block.configurationValues,
+                blockShape=block.blockShape,
+                metadata=block.metadata.copy(),
+            )
+
+            resolved_block_types.append(resolved_block)
+
+        resolved_lib = BlockLibraryConfig(
+            name=lib.name,
+            blockTypes=resolved_block_types,
+            metadata=lib.metadata.copy(),
+        )
+
+        resolved_libraries.append(resolved_lib)
+
+    return resolved_libraries
 
 def load_high_level_plugin_from_file(path: pathlib.Path, module_name: str, plugin_config: BlockLibraryPluginConfig) -> BlockLibraryPlugin:
 
