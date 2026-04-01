@@ -1,0 +1,11 @@
+pluginName: dummy_plugin
+pluginType: highLevelBlockLibrary
+blockType: high_level
+metadata:
+  pythonFilename: dummy_plugin.py
+blockLibraries:
+  - name: dummy_library
+    blockTypes:
+      - name: dummy
+        inputPortNumber: 2
+        outputPortNumber: 3

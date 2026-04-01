@@ -4,15 +4,16 @@ import runpy
 import yaml
 import pathlib
 from typing import Dict, Any, List
-from pysyslink_toolkit.Plugin import Plugin
+from pysyslink_toolkit.block_libraries.BlockLibraryPluginConfig import BlockLibraryPluginConfig
 from pysyslink_toolkit.HighLevelBlock import HighLevelBlock
 from pysyslink_toolkit.LowLevelBlockStructure import LowLevelBlock, LowLevelLink, LowLevelBlockStructure
-from pysyslink_toolkit.load_plugins import load_plugins_from_paths
-from pysyslink_toolkit.TextFileManager import _load_config, _load_toolkit_config
+from pysyslink_toolkit.block_libraries.ParseBlockLibraries import load_block_library_plugins_from_paths
+from pysyslink_toolkit.TextFileManager import _load_toolkit_config, load_yaml_file
 from pysyslink_toolkit.HighLevelSystem import HighLevelSystem
+from pysyslink_toolkit.toolkit_config.ParseToolkitConfig import parse_toolkit_config
 
 
-def compile_high_level_block(block: HighLevelBlock, plugins: list[Plugin]) -> LowLevelBlockStructure:
+def compile_high_level_block(block: HighLevelBlock, plugins: list[BlockLibraryPluginConfig]) -> LowLevelBlockStructure:
     for plugin in plugins:
         try:
             return plugin.compile_block(block)
@@ -47,14 +48,12 @@ def serialize_block(block: LowLevelBlock) -> dict:
                 d["properties"][k]["value"] = format_property_value(v["type"], v["value"])
     return d
 
-def compile_pslk_to_yaml(pslk_path: str, config_path: str, output_yaml_path: str):
+def compile_pslk_to_yaml(pslk_path: str, toolkit_config_path: str, output_yaml_path: str):
     # Load the .pslk file (JSON)
-    system_json = _load_config(pslk_path)
+    system_json = load_yaml_file(pslk_path)
 
     # Load plugins
-    config = _load_toolkit_config(config_path)
-    plugin_paths = config.get("plugin_paths", [])
-    plugins = load_plugins_from_paths(config_path, plugin_paths)
+    block_library_plugins = load_block_library_plugins_from_paths(toolkit_config_path)
 
     high_level_system, parameter_environment_namespace = HighLevelSystem.from_dict(pslk_path, system_json)
 
@@ -62,7 +61,7 @@ def compile_pslk_to_yaml(pslk_path: str, config_path: str, output_yaml_path: str
     # Compile each high-level block
     block_structs: Dict[str, LowLevelBlockStructure] = {}
     for block in high_level_system.blocks:
-        ll_struct = compile_high_level_block(block, plugins)
+        ll_struct = compile_high_level_block(block, block_library_plugins)
         block_structs[block.id] = ll_struct
 
     print("High level blocks compiled")

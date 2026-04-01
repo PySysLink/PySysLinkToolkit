@@ -1,7 +1,0 @@
-pluginName: dummy_plugin
-pluginType: highLevelBlockLibrary
-pythonFilename: dummy_plugin.py
-blockLibraries:
-  - name: dummy_library
-    blockTypes:
-      - name: dummy

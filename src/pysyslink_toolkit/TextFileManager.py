@@ -68,25 +68,25 @@ def _resolve_paths_recursive(obj: Any, config_dir: str) -> Any:
 
     return obj
 
-def _load_config(config_path: str | None) -> Dict[str, Any]:
-    if config_path is None:
+def load_yaml_file(yaml_file: str | None) -> Dict[str, Any]:
+    if yaml_file is None:
         return {}
-    if not os.path.exists(config_path):
-        raise FileNotFoundError(f"Configuration file not found: '{config_path}'")
+    if not os.path.exists(yaml_file):
+        raise FileNotFoundError(f"Configuration file not found: '{yaml_file}'")
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(yaml_file, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f)
     except yaml.YAMLError as e:
-        raise yaml.YAMLError(f"YAML parsing error in '{config_path}': {e}") from e
+        raise yaml.YAMLError(f"YAML parsing error in '{yaml_file}': {e}") from e
     except OSError as e:
-        raise OSError(f"Could not open configuration file '{config_path}': {e}") from e
+        raise OSError(f"Could not open configuration file '{yaml_file}': {e}") from e
     
     if data is None:
-        raise ValueError(f"Configuration file '{config_path}' is empty.")
+        raise ValueError(f"Configuration file '{yaml_file}' is empty.")
     if not isinstance(data, dict):
         raise ValueError(
-            f"Configuration file '{config_path}' must contain a YAML mapping (key-value pairs), "
+            f"Configuration file '{yaml_file}' must contain a YAML mapping (key-value pairs), "
             f"but got {type(data).__name__}."
         )
     return data

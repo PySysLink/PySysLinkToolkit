@@ -1,7 +1,11 @@
 pluginName: scope_plugin
 pluginType: highLevelBlockLibrary
-pythonFilename: scope_plugin.py
+blockType: high_level
+metadata:
+  pythonFilename: scope_plugin.py
 blockLibraries:
   - name: scope_library
     blockTypes:
       - name: scope
+        inputPortNumber: 1
+        outputPortNumber: 0

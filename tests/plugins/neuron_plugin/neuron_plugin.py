@@ -3,7 +3,7 @@ from pysyslink_toolkit.BlockRenderInformation import BlockRenderInformation
 from pysyslink_toolkit.LowLevelBlockStructure import LowLevelBlock, LowLevelLink, LowLevelBlockStructure
 from pysyslink_toolkit.HighLevelBlock import HighLevelBlock
 
-class NeuronPlugin(pysyslink_toolkit.Plugin):   
+class NeuronPlugin(pysyslink_toolkit.BlockLibraryPlugin):   
     
     def _compile_block(self, high_level_block: HighLevelBlock) -> LowLevelBlockStructure:
         n = high_level_block.input_ports

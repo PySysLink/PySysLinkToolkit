@@ -12,7 +12,7 @@ import mpld3
 
 
 
-class NeuronPlugin(pysyslink_toolkit.Plugin):   
+class NeuronPlugin(pysyslink_toolkit.BlockLibraryPlugin):   
     
     def _compile_block(self, high_level_block: HighLevelBlock) -> LowLevelBlockStructure:
         port_map = {}

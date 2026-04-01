@@ -1,6 +1,8 @@
 pluginName: neuron_plugin
 pluginType: highLevelBlockLibrary
-pythonFilename: neuron_plugin.py
+blockType: high_level
+metadata:
+  pythonFilename: neuron_plugin.py
 blockLibraries:
   - name: neuron_library
     blockTypes:
@@ -14,3 +16,5 @@ blockLibraries:
           - name: Offset
             defaultValue: 1
             type: float
+        inputPortNumber: 2
+        outputPortNumber: 1
