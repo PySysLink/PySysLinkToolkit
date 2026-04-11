@@ -18,7 +18,7 @@ class NeuronPlugin(pysyslink_toolkit.BlockLibraryPlugin):
         port_map = {}
 
         block = LowLevelBlock(
-            id=high_level_block.id, name=f"Scope {high_level_block.label} Display", block_type="BasicCpp", block_class="BasicBlocks/Display"
+            id=high_level_block.id, name=f"Scope {high_level_block.label} Display", block_type="BasicCpp", block_class="BasicBlocks/Display", input_port_number=1, output_port_number=0
         )
         port_map[("input", 0)] = (high_level_block.id, 0)
 

@@ -10,7 +10,7 @@ class DummyPlugin(BlockLibraryPlugin):
             raise NotImplementedError("Only dummy blocks are handled by this plugin.")
         
         block = LowLevelBlock(
-            id="dummy", name="Dummy", block_type="DummyType", block_class="DummyClass"
+            id="dummy", name="Dummy", block_type="DummyType", block_class="DummyClass", input_port_number=1, output_port_number=1
         )
         return LowLevelBlockStructure([block], [], {("output", 0): ("dummy", 0)})
 

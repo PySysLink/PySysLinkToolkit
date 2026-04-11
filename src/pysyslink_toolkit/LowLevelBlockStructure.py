@@ -1,11 +1,14 @@
 from typing import Any, Dict, List, Tuple
 
 class LowLevelBlock:
-    def __init__(self, id: str, name: str, block_type: str, block_class: str, **kwargs):
+    def __init__(self, id: str, name: str, block_type: str, block_class: str,
+                 input_port_number: int, output_port_number: int, **kwargs):
         self.id = id
         self.name = name
         self.block_type = block_type
         self.block_class = block_class
+        self.input_port_number = input_port_number
+        self.output_port_number = output_port_number
         self.extra = kwargs  # Any additional block-specific properties
 
     def to_dict(self) -> Dict[str, Any]:
@@ -14,6 +17,8 @@ class LowLevelBlock:
             "Name": self.name,
             "BlockType": self.block_type,
             "BlockClass": self.block_class,
+            "InputPortNumber": self.input_port_number,
+            "OutputPortNumber": self.output_port_number,
         }
         d.update(self.extra)
         return d

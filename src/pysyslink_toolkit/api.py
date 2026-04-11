@@ -40,14 +40,15 @@ async def run_simulation(toolkit_config_path: str | None, low_level_system: str,
     # This is a placeholder. You would implement your simulation logic here.
     # For now, just return a dummy result.
 
-    toolkit_config = parse_toolkit_config(toolkit_config_path)
-    plugin_paths = toolkit_config.get("base_block_type_support_plugin_paths", ["/usr/local/lib/pysyslink_plugins/block_type_supports"])
+
+    print("Calling simulation")
     result = await simulate_system(
         system_yaml_path=low_level_system,
         sim_options_yaml_path=sim_options,
-        display_callback=display_callback,
-        plugin_dir=plugin_paths
+        display_callback=display_callback
     )
+    print("Simulation done")
+
 
     return result
 
@@ -87,7 +88,8 @@ def get_block_render_information(toolkit_config_path: str | None, block_data: Di
     raise RuntimeError(f"No plugin could provide render information for block: {block.block_type}")
 
 def get_block_html(toolkit_config_path: str | None, block_data: Dict[str, Any], pslk_path: str) -> str:
-    block_library_plugins = load_block_library_plugins_from_paths(toolkit_config_path)
+    toolkit_config = parse_toolkit_config(toolkit_config_path)
+    block_library_plugins = load_block_library_plugins_from_paths(toolkit_config.plugin_paths)
 
     system_json = load_yaml_file(pslk_path)
 
@@ -100,8 +102,8 @@ def get_block_html(toolkit_config_path: str | None, block_data: Dict[str, Any], 
         except NotImplementedError:
             continue
         except Exception as e:
-            raise RuntimeError(f"Exception while getting block render information: {e}")
-    raise RuntimeError(f"No plugin could provide render information for block: {block.block_type}")
+            raise RuntimeError(f"Exception while getting block html: {e}")
+    raise RuntimeError(f"No plugin could provide html for block: {block.block_type}")
 
 if __name__ == "__main__":
     test_dir = os.path.join(os.path.dirname(__file__), "..", "..", "tests", "data")

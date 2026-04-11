@@ -60,6 +60,7 @@ def _parse_block_library_configs_from_paths(paths: List[str]) -> List[BlockLibra
     yaml_files: List[str] = []
 
     for path in paths:
+        print("GLOBBING PATH:", path, flush=True)
         yaml_files.extend(
             glob.glob(os.path.join(path, "**", "*.pslkblp.yaml"), recursive=True)
         )
