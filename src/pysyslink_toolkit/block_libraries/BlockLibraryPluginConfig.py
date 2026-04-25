@@ -25,15 +25,20 @@ class ConfigurationValue:
 @dataclass
 class BlockTypeConfig:
     name: str
-    inputPortNumber: int | str
-    inputPortTypes: dict[str | int, PortTypeConfig]
-    outputPortNumber: int | str
-    outputPortTypes: dict[str | int, PortTypeConfig]
+    inputPortNumber: int | str = "NullForCommonBlock"
+    outputPortNumber: int | str = "NullForCommonBlock"
+
+    inputPortTypes: dict[str | int, PortTypeConfig] = field(default_factory=dict)
+    outputPortTypes: dict[str | int, PortTypeConfig] = field(default_factory=dict)
+    commonBlock: str | None = None
     configurationValues: Dict[str, ConfigurationValue] = field(default_factory=dict)
     blockShape: BlockShape = BlockShape.square
     metadata: dict = field(default_factory=dict)
 
     def get_port_number(self, configuration_values: Dict[str, any]) -> Tuple[int, int]:
+        if self.inputPortNumber == "NullForCommonBlock" or self.outputPortNumber == "NullForCommonBlock":
+            raise ValueError("get_port_number called on a common block, or specific block did not override the field correctly")
+        
         result = [None, None]
         if type(self.inputPortNumber) is int:
             result[0] = self.inputPortNumber
@@ -224,6 +229,8 @@ class BlockLibraryPluginConfig:
     blockType: str
 
     yaml_filename: str | None
+
+    commonBlocks: List[BlockTypeConfig] = field(default_factory=list)
 
     blockLibraries: List[BlockLibraryConfig] = field(default_factory=list)
     metadata: dict = field(default_factory=dict)

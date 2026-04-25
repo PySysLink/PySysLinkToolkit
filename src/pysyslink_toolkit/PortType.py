@@ -1,4 +1,3 @@
-from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum, auto
 
@@ -28,6 +27,7 @@ class PortType:
     other_type_name: str | None = None
     supported_port_types_for_inheritance: list[PortType] | None = None
 
+@dataclass
 class PortTypeConfig:
     port_category: str = "FullySupportedSignalValue"
     signal_value_type: str | None = None

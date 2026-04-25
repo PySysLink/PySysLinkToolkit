@@ -1,4 +1,5 @@
 from ast import Dict
+from copy import deepcopy
 import importlib
 import inspect
 import pathlib
@@ -46,12 +47,137 @@ def _normalize_block_type(block_type_dict: dict) -> dict:
 def _normalize_plugin_dict(data: dict) -> dict:
     """Normalize YAML structure before dacite deserialization."""
 
+    for i, common_block_type in enumerate(data.get("commonBlocks", [])):
+        data["commonBlocks"][i] = _normalize_block_type(common_block_type)
+
     for library in data.get("blockLibraries", []):
         for i, block_type in enumerate(library.get("blockTypes", [])):
             library["blockTypes"][i] = _normalize_block_type(block_type)
 
     return data
 
+
+def _solve_block_library_config_common_blocks(plugin: BlockLibraryPluginConfig) -> BlockLibraryPluginConfig:
+    """
+    Resolve `commonBlocks` inheritance.
+
+    A block type may declare:
+        commonBlock: "<name>"
+
+    Then the referenced common block acts as a base definition.
+
+    Rules:
+    - Child values override parent values
+    - configurationValues are merged by key
+    - metadata is merged (child overrides parent keys)
+    - Missing scalar properties are inherited
+    - Port type dictionaries are merged (child overrides same keys)
+    """
+
+    # ---------------------------------------------------------
+    # Build lookup of common blocks by name
+    # ---------------------------------------------------------
+    common_map: dict[str, BlockTypeConfig] = {}
+
+    for common in plugin.commonBlocks:
+        common_map[common.name] = common
+
+    # ---------------------------------------------------------
+    # Resolve all libraries
+    # ---------------------------------------------------------
+    solved_libraries: list[BlockLibraryConfig] = []
+
+    for library in plugin.blockLibraries:
+        solved_blocks: list[BlockTypeConfig] = []
+
+        for block in library.blockTypes:
+            solved_blocks.append(
+                _solve_single_block_with_common(block, common_map)
+            )
+
+        solved_libraries.append(
+            BlockLibraryConfig(
+                name=library.name,
+                blockTypes=solved_blocks,
+                metadata=deepcopy(library.metadata),
+            )
+        )
+
+    return BlockLibraryPluginConfig(
+        pluginName=plugin.pluginName,
+        pluginType=plugin.pluginType,
+        blockType=plugin.blockType,
+        yaml_filename=plugin.yaml_filename,
+        commonBlocks=deepcopy(plugin.commonBlocks),
+        blockLibraries=solved_libraries,
+        metadata=deepcopy(plugin.metadata),
+    )
+
+
+def _solve_single_block_with_common(block: BlockTypeConfig, common_map: dict[str, BlockTypeConfig]) -> BlockTypeConfig:
+    """
+    Resolve one block against its commonBlock base.
+    """
+
+    common_name = block.commonBlock
+
+    if not common_name:
+        return deepcopy(block)
+
+    if common_name not in common_map:
+        raise ValueError(
+            f"Block '{block.name}' references unknown commonBlock "
+            f"'{common_name}'"
+        )
+
+    base = common_map[common_name]
+
+    # ---------------------------------------------------------
+    # Merge configuration values
+    # ---------------------------------------------------------
+    merged_config = deepcopy(base.configurationValues)
+    merged_config.update(deepcopy(block.configurationValues))
+
+    # ---------------------------------------------------------
+    # Merge metadata
+    # ---------------------------------------------------------
+    merged_metadata = deepcopy(base.metadata)
+    merged_metadata.update(deepcopy(block.metadata))
+
+    # ---------------------------------------------------------
+    # Merge port type definitions
+    # ---------------------------------------------------------
+    merged_input_types = deepcopy(base.inputPortTypes)
+    merged_input_types.update(deepcopy(block.inputPortTypes))
+
+    merged_output_types = deepcopy(base.outputPortTypes)
+    merged_output_types.update(deepcopy(block.outputPortTypes))
+
+    # ---------------------------------------------------------
+    # Child overrides parent when explicitly set
+    # ---------------------------------------------------------
+    solved = BlockTypeConfig(
+        name=block.name,
+
+        inputPortNumber=block.inputPortNumber,
+
+        outputPortNumber=block.outputPortNumber,
+
+        inputPortTypes=merged_input_types,
+        outputPortTypes=merged_output_types,
+
+        configurationValues=merged_config,
+
+        blockShape=(
+            block.blockShape
+            if block.blockShape is not None
+            else base.blockShape
+        ),
+
+        metadata=merged_metadata,
+    )
+
+    return solved
 
 def _parse_block_library_configs_from_paths(paths: List[str]) -> List[BlockLibraryPluginConfig]:
 
@@ -83,8 +209,10 @@ def _parse_block_library_configs_from_paths(paths: List[str]) -> List[BlockLibra
             plugin.yaml_filename = file_path
         except Exception as e:
             raise RuntimeError(f"Error wile loading plugin config from file: {file_path}. Error from dacite: {e}")
+        
+        solved_plugin = _solve_block_library_config_common_blocks(plugin)
 
-        plugin_configs.append(plugin)
+        plugin_configs.append(solved_plugin)
 
     return plugin_configs
 
@@ -110,6 +238,10 @@ def load_block_library_plugins_from_paths(paths: List[str]) -> list[BlockLibrary
     return plugins
 
 def resolve_block_libraries(libraries: List[BlockLibraryConfig]) -> List[BlockLibraryConfig]:
+    """
+    Resolve block libraries, by calculating the default port numbers based on the default config values.
+    This is needed for block rendering during instantiation, the frontend don't know to resolve port numbers.
+    """
     resolved_libraries: List[BlockLibraryConfig] = []
 
     for lib in libraries:

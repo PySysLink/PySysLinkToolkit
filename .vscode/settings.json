@@ -1,4 +1,11 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-	"python.terminal.activateEnvironment": true
+	"python.terminal.activateEnvironment": true,
+	"python-envs.pythonProjects": [
+		{
+			"path": ".",
+			"envManager": "ms-python.python:venv",
+			"packageManager": "ms-python.python:pip"
+		}
+	]
 }
