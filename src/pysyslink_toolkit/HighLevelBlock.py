@@ -1,12 +1,16 @@
 from typing import Any, Dict, List, Optional
 
+from pysyslink_toolkit.PortType import PortType
+
 class HighLevelBlock:
     def __init__(
         self,
         id: str,
         label: str,
         input_ports: int,
+        input_port_types: List[PortType],
         output_ports: int,
+        output_port_types: List[PortType],
         block_library: str,
         block_type: str,
         properties: Dict[str, Dict[str, Any]]
@@ -14,7 +18,9 @@ class HighLevelBlock:
         self.id = id
         self.label = label
         self.input_ports = input_ports
+        self.input_port_types = input_port_types
         self.output_ports = output_ports
+        self.output_port_types = output_port_types
         self.block_library = block_library
         self.block_type = block_type
         self.properties = properties
