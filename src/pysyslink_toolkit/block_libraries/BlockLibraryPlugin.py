@@ -48,6 +48,8 @@ class BlockLibraryPlugin(abc.ABC):
         configuration_values = {param_name: high_level_block.properties[param_name]["value"] for param_name in high_level_block.properties.keys()}
         print(f"configuration values for block: {configuration_values}")
         render_information.input_ports, render_information.output_ports = block_type_config.get_port_number(configuration_values)
+
+        render_information.input_port_types, render_information.output_port_types = block_type_config.get_port_types(configuration_values)
         
         return render_information
     

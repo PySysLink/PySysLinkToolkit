@@ -1,6 +1,7 @@
 from enum import Enum
-# ...existing code...
 import json
+
+from pysyslink_toolkit.PortType import PortType
 
 class BlockShape(Enum):
     square = "square"
@@ -54,6 +55,9 @@ class BlockRenderInformation:
     input_ports: int = 1
     output_ports: int = 1
 
+    input_port_types: list[PortType] = []
+    output_port_types: list[PortType] = []
+
     def to_dict(self):
         return {
             "shape": self.shape.value,
@@ -68,7 +72,9 @@ class BlockRenderInformation:
             "max_width": self.max_width,
             "max_height": self.max_height,
             "input_ports": self.input_ports,
-            "output_ports": self.output_ports
+            "output_ports": self.output_ports,
+            "input_port_types": [pt.to_dict() for pt in self.input_port_types],
+            "output_port_types": [pt.to_dict() for pt in self.output_port_types]
         }
 
     def to_json(self):

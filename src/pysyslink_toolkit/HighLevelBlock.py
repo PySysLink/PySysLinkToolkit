@@ -33,7 +33,7 @@ class HighLevelBlock:
     ) -> "HighLevelBlock":
         # Required fields validation
         required_fields = [
-            "id", "label", "inputPorts", "outputPorts",
+            "id", "label", "inputPorts", "outputPorts", "inputPortTypes", "outputPortTypes",
             "blockLibrary", "blockType", "properties"
         ]
         missing = [field for field in required_fields if field not in data]
@@ -45,7 +45,9 @@ class HighLevelBlock:
             block_id = str(data["id"])
             label = str(data["label"])
             input_ports = int(data["inputPorts"])
+            input_port_types = PortType(data["inputPortTypes"])
             output_ports = int(data["outputPorts"])
+            output_port_types = PortType(data["outputPortTypes"])
             block_library = str(data["blockLibrary"])
             block_type = str(data["blockType"])
         except (TypeError, ValueError) as e:
@@ -64,7 +66,7 @@ class HighLevelBlock:
             value = entry.get("value")
 
             # Evaluate expressions when appropriate
-            if isinstance(value, str) and ptype != "string":
+            if isinstance(value, str) and ptype != "string" and not ptype.startswith("enum("):
                 try:
                     evaluated = eval(
                         value,
@@ -72,7 +74,7 @@ class HighLevelBlock:
                         parameter_environment_namespace
                     )
                 except Exception as e:
-                    raise ValueError(f"Error evaluating property '{key}': {e}")
+                    raise ValueError(f"Error evaluating property '{key}' of type '{ptype}': {e}")
             else:
                 evaluated = value
 
@@ -85,7 +87,9 @@ class HighLevelBlock:
             id=block_id,
             label=label,
             input_ports=input_ports,
+            input_port_types=input_port_types,
             output_ports=output_ports,
+            output_port_types=output_port_types,
             block_library=block_library,
             block_type=block_type,
             properties=parsed_props,
@@ -96,7 +100,9 @@ class HighLevelBlock:
             "id": self.id,
             "label": self.label,
             "inputPorts": self.input_ports,
+            "inputPortTypes": self.input_port_types,
             "outputPorts": self.output_ports,
+            "outputPortTypes": self.output_port_types,
             "blockLibrary": self.block_library,
             "blockType": self.block_type,
             "properties": self.properties,
