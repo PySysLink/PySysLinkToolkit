@@ -10,6 +10,7 @@ import yaml
 
 from dacite import from_dict, Config
 
+from pysyslink_toolkit.PortType import PortType
 from pysyslink_toolkit.TextFileManager import load_yaml_file
 from pysyslink_toolkit.block_libraries.BlockLibraryPlugin import BlockLibraryPlugin
 from pysyslink_toolkit.block_libraries.BlockLibraryPluginConfig import (
@@ -192,7 +193,10 @@ def _parse_block_library_configs_from_paths(paths: List[str]) -> List[BlockLibra
         )
     
     dacite_config = Config(
-        cast=[BlockLibraryPluginType, BlockShape]
+        cast=[BlockLibraryPluginType, BlockShape],
+        type_hooks={
+            PortType: PortType.from_dict
+        }
     )
 
     for file_path in yaml_files:

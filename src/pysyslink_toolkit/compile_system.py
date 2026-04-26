@@ -58,6 +58,7 @@ def compile_pslk_to_yaml(pslk_path: str, toolkit_config_path: str, output_yaml_p
 
     high_level_system, parameter_environment_namespace = HighLevelSystem.from_dict(pslk_path, system_json)
 
+    high_level_system.propagate_and_validate_port_types()
 
     # Compile each high-level block
     block_structs: Dict[str, LowLevelBlockStructure] = {}

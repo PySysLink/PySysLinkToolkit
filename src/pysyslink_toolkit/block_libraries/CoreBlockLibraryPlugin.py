@@ -70,7 +70,9 @@ class CoreBlockLibraryPlugin(BlockLibraryPlugin):
             block_type=self.block_library_plugin_config.blockType,
             block_class=self._get_block_class(high_level_block.block_library, high_level_block.block_type),
             input_port_number=high_level_block.input_ports,
+            input_port_types=high_level_block.input_port_types,
             output_port_number=high_level_block.output_ports,
+            output_port_types=high_level_block.output_port_types,
             **converted_properties
         )
         # Map input and output ports directly

@@ -158,6 +158,7 @@ class BlockTypeConfig:
                 f"Missing port type definitions for ports: {unresolved}"
             )
 
+        print(f"Resolved port types for configs {configs}: {result}")
         return result
 
     def _resolve_port_type(self, cfg: PortTypeConfig, configuration_values: Dict[str, Any]) -> PortType:
@@ -165,7 +166,8 @@ class BlockTypeConfig:
         Resolve one PortTypeConfig into one PortType.
         """
 
-        category = PortCategory(cfg.port_category)
+        category = PortCategory(self._resolve_string(cfg.port_category, configuration_values))
+        print(f"Supported port types for inheritance config: {cfg.supported_port_types_for_inheritance}")
 
         return PortType(
             port_category=category,
@@ -184,14 +186,14 @@ class BlockTypeConfig:
             other_type_name=self._resolve_string(
                 cfg.other_type_name, configuration_values
             ),
-            supported_port_types_for_inheritance=(
+            supported_port_types_for_inheritance=
                 [
-                    self._resolve_port_type(x, configuration_values)
+                    self._resolve_port_type(x, configuration_values) if isinstance(x, PortTypeConfig) else x
                     for x in (cfg.supported_port_types_for_inheritance or [])
                 ]
                 if cfg.supported_port_types_for_inheritance
                 else None
-            ),
+            ,
         )
 
     def _resolve_signal_value_type(self, value: str | None, configuration_values: Dict[str, Any]) -> FullySupportedSignalValueType | None:

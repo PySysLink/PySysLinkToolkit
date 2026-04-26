@@ -45,9 +45,9 @@ class HighLevelBlock:
             block_id = str(data["id"])
             label = str(data["label"])
             input_ports = int(data["inputPorts"])
-            input_port_types = PortType(data["inputPortTypes"])
+            input_port_types = [PortType.from_dict(data_i) for data_i in data["inputPortTypes"]]
             output_ports = int(data["outputPorts"])
-            output_port_types = PortType(data["outputPortTypes"])
+            output_port_types = [PortType.from_dict(data_o) for data_o in data["outputPortTypes"]]
             block_library = str(data["blockLibrary"])
             block_type = str(data["blockType"])
         except (TypeError, ValueError) as e:
@@ -66,7 +66,7 @@ class HighLevelBlock:
             value = entry.get("value")
 
             # Evaluate expressions when appropriate
-            if isinstance(value, str) and ptype != "string" and not ptype.startswith("enum("):
+            if isinstance(value, str) and ptype != "string" and not ptype.startswith("enum(") and not ptype.startswith("options("):
                 try:
                     evaluated = eval(
                         value,
