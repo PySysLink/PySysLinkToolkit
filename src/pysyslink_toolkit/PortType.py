@@ -28,6 +28,28 @@ class PortType:
     other_type_name: str | None = None
     supported_port_types_for_inheritance: list[PortType | Literal["FullySupportedSignalValueType.Any"]] | None = None
     inheritance_group: int = 0 # Ports with the same inheritance group within a block inherit at the same time, their types are the same
+
+    def to_string(self):
+        if self.port_category == PortCategory.fully_supported_signal_value:
+            return f"FullySupportedSignalValue.{self.signal_value_type.value}" if self.signal_value_type else "FullySupportedSignalValueType.Any"
+        elif self.port_category == PortCategory.enumeration:
+            return f"Enumeration:{self.enumeration_name}"
+        elif self.port_category == PortCategory.structure:
+            return f"Structure:{self.structure_name}"
+        elif self.port_category == PortCategory.pointer_to_object:
+            return f"PointerToObject:{self.pointing_object_class_name}"
+        elif self.port_category == PortCategory.other_type:
+            return f"OtherType:{self.other_type_name}"
+        elif self.port_category == PortCategory.inherited: 
+            if self.supported_port_types_for_inheritance is None:
+                return "Inherited:None"
+            else:
+                supported_types_str = ",".join(
+                    [t.to_string() if isinstance(t, PortType) else t for t in self.supported_port_types_for_inheritance]
+                )
+                return f"Inherited:[{supported_types_str}]"
+        else:
+            return "Unknown"
     
     def to_dict(self):
         base = {

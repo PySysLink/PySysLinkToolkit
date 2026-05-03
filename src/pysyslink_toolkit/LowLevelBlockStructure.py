@@ -1,18 +1,17 @@
 from typing import Any, Dict, List, Tuple
 
-from pysyslink_toolkit.PortType import PortType
 
 class LowLevelBlock:
     def __init__(self, id: str, name: str, block_type: str, block_class: str,
-                 input_port_number: int, input_port_types: List[PortType], output_port_number: int, output_port_types: List[PortType], **kwargs):
+                 input_port_number: int, input_port_types: List[str], output_port_number: int, output_port_types: List[str], **kwargs):
         self.id = id
         self.name = name
         self.block_type = block_type
         self.block_class = block_class
         self.input_port_number = input_port_number
-        self.input_port_types: List[PortType] = input_port_types
+        self.input_port_types: List[str] = input_port_types
         self.output_port_number = output_port_number
-        self.output_port_types: List[PortType] = output_port_types
+        self.output_port_types: List[str] = output_port_types
         self.extra = kwargs  # Any additional block-specific properties
 
     def to_dict(self) -> Dict[str, Any]:
@@ -22,9 +21,9 @@ class LowLevelBlock:
             "BlockType": self.block_type,
             "BlockClass": self.block_class,
             "InputPortNumber": self.input_port_number,
-            "InputPortTypes": [port_type.to_dict() for port_type in self.input_port_types],
+            "InputPortTypes": self.input_port_types,
             "OutputPortNumber": self.output_port_number,
-            "OutputPortTypes": [port_type.to_dict() for port_type in self.output_port_types],
+            "OutputPortTypes": self.output_port_types,
         }
         d.update(self.extra)
         return d
