@@ -16,14 +16,14 @@ class LowLevelBlock:
 
     def to_dict(self) -> Dict[str, Any]:
         d = {
-            "Id": self.id,
-            "Name": self.name,
-            "BlockType": self.block_type,
-            "BlockClass": self.block_class,
-            "InputPortNumber": self.input_port_number,
-            "InputPortTypes": self.input_port_types,
-            "OutputPortNumber": self.output_port_number,
-            "OutputPortTypes": self.output_port_types,
+            "Id[string]": self.id,
+            "Name[string]": self.name,
+            "BlockType[string]": self.block_type,
+            "BlockClass[string]": self.block_class,
+            "InputPortNumber[int]": self.input_port_number,
+            "InputPortTypes[vector<string>]": self.input_port_types,
+            "OutputPortNumber[int]": self.output_port_number,
+            "OutputPortTypes[vector<string>]": self.output_port_types,
         }
         d.update(self.extra)
         return d
@@ -47,12 +47,12 @@ class LowLevelLink:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "Id": self.id,
-            "Name": self.name,
-            "SourceBlockId": self.source_block_id,
-            "SourcePortIdx": self.source_port_idx,
-            "DestinationBlockId": self.destination_block_id,
-            "DestinationPortIdx": self.destination_port_idx,
+            "Id[string]": self.id,
+            "Name[string]": self.name,
+            "SourceBlockId[string]": self.source_block_id,
+            "SourcePortIdx[int]": self.source_port_idx,
+            "DestinationBlockId[string]": self.destination_block_id,
+            "DestinationPortIdx[int]": self.destination_port_idx,
         }
 
 class LowLevelBlockStructure:

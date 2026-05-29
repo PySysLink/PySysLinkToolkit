@@ -28,25 +28,29 @@ class CoreBlockLibraryPlugin(BlockLibraryPlugin):
             expected_type = prop_configuration.type
             try:
                 if expected_type == "float":
-                    converted[key] = float(value)
+                    converted[key + "[double]"] = float(value)
                 elif expected_type == "int":
-                    converted[key] = int(value)
+                    converted[key + "[int]"] = int(value)
                 elif expected_type == "bool":
-                    converted[key] = bool(value)
+                    converted[key + "[bool]"] = bool(value)
                 elif expected_type == "string":
-                    converted[key] = str(value)
+                    converted[key + "[string]"] = str(value)
+                elif expected_type == "complex":
+                    converted[key + "[complex]"] = complex(value)
                 elif expected_type.endswith("[]") and isinstance(value, list):
                     base_type = expected_type[:-2]
                     if base_type == "float":
-                        converted[key] = [float(v) for v in value]
+                        converted[key + "[vector<double>]"] = [float(v) for v in value]
                     elif base_type == "int":
-                        converted[key] = [int(v) for v in value]
+                        converted[key + "[vector<int>]"] = [int(v) for v in value]
                     elif base_type == "string":
-                        converted[key] = [str(v) for v in value]
+                        converted[key + "[vector<string>]"] = [str(v) for v in value]
+                    elif base_type == "complex":
+                        converted[key + "[vector<complex>]"] = [complex(v) for v in value]
                     else:
-                        converted[key] = value
+                        converted[key + "[vector<string>]"] = [str(v) for v in value]
                 else:
-                    converted[key] = value
+                    converted[key + "[string]"] = value
             except Exception as e:
                 raise ValueError(f"Error converting type of property {key} to type {expected_type}, value {value}: {e}")
         return converted
