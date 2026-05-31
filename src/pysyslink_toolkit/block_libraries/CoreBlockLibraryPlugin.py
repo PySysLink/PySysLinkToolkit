@@ -17,42 +17,47 @@ class CoreBlockLibraryPlugin(BlockLibraryPlugin):
         # Find the block library and block type definition
         block_type = self.get_block_type_config(block_library_name, block_type_name)
 
+        parameter_types = block_type.get_parameter_types({param_name: prop["value"] for param_name, prop in properties.items()})
+
+        print(f"block_type: {block_type}")
+        print(f"parameter_types: {parameter_types}")
+
         converted = {}
         for key, prop in properties.items():
-            prop_configuration = block_type.configurationValues.get(key)
+            parameter_type = parameter_types.get(key)
             value = prop["value"]
-            if prop_configuration is None:
-                converted[key] = value  # or raise error if you want strictness
-                continue
+            if parameter_type is None:
+                raise ValueError(f"Property {key} not defined in block type {block_type_name} of library {block_library_name}")
+            
             # Convert based on expected_type
-            expected_type = prop_configuration.type
+            print(f"Converting property {key} with value {value} to expected type {parameter_type}")
             try:
-                if expected_type == "float":
+                if parameter_type == "double":
                     converted[key + "[double]"] = float(value)
-                elif expected_type == "int":
+                elif parameter_type == "int":
                     converted[key + "[int]"] = int(value)
-                elif expected_type == "bool":
+                elif parameter_type == "bool":
                     converted[key + "[bool]"] = bool(value)
-                elif expected_type == "string":
+                elif parameter_type == "string":
                     converted[key + "[string]"] = str(value)
-                elif expected_type == "complex":
-                    converted[key + "[complex]"] = complex(value)
-                elif expected_type.endswith("[]") and isinstance(value, list):
-                    base_type = expected_type[:-2]
-                    if base_type == "float":
+                elif parameter_type == "complex_double":
+                    converted[key + "[complex_double]"] = complex(value)
+                elif parameter_type.endswith("[]") and isinstance(value, list):
+                    base_type = parameter_type[:-2]
+                    if base_type == "double":
                         converted[key + "[vector<double>]"] = [float(v) for v in value]
                     elif base_type == "int":
                         converted[key + "[vector<int>]"] = [int(v) for v in value]
                     elif base_type == "string":
                         converted[key + "[vector<string>]"] = [str(v) for v in value]
-                    elif base_type == "complex":
-                        converted[key + "[vector<complex>]"] = [complex(v) for v in value]
+                    elif base_type == "complex_double":
+                        converted[key + "[vector<complex_double>]"] = [complex(v) for v in value]
                     else:
                         converted[key + "[vector<string>]"] = [str(v) for v in value]
                 else:
                     converted[key + "[string]"] = value
             except Exception as e:
-                raise ValueError(f"Error converting type of property {key} to type {expected_type}, value {value}: {e}")
+                raise ValueError(f"Error converting type of property {key} to type {parameter_type}, value {value}: {e}")
         return converted
 
     def _get_block_class(self, block_library, block_type) -> str:

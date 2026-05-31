@@ -210,8 +210,21 @@ class BlockTypeConfig:
     def _resolve_string(self, value: str | None, configuration_values: Dict[str, Any]) -> str | None:
         if value is None:
             return None
+        
+        if value.endswith('[]'):
+            base_value = value[:-2]
+            resolved_base = configuration_values.get(base_value, base_value)
+            return str(resolved_base) + "[]"
 
         return str(configuration_values.get(value, value))
+    
+
+    def get_parameter_types(self, configuration_values: Dict[str, Any]) -> Dict[str, str]:
+        parameter_types = {}
+        for param_name, config_value in self.configurationValues.items():
+            resolved_type = self._resolve_string(config_value.type, configuration_values)
+            parameter_types[param_name] = resolved_type
+        return parameter_types
 
 @dataclass
 class BlockLibraryConfig:
