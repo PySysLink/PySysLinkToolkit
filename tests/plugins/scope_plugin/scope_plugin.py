@@ -4,36 +4,30 @@ import os
 from matplotlib import pyplot as plt
 import yaml
 import pysyslink_toolkit
-from pysyslink_toolkit.BlockRenderInformation import BlockRenderInformation
 from pysyslink_toolkit.LowLevelBlockStructure import LowLevelBlock, LowLevelLink, LowLevelBlockStructure
 from pysyslink_toolkit.HighLevelBlock import HighLevelBlock
 
 import mpld3
 
 
-
-class NeuronPlugin(pysyslink_toolkit.BlockLibraryPlugin):   
-    
+class ScopePlugin(pysyslink_toolkit.BlockLibraryPlugin):   
     def _compile_block(self, high_level_block: HighLevelBlock) -> LowLevelBlockStructure:
         port_map = {}
 
         block = LowLevelBlock(
-            id=high_level_block.id, name=f"Scope {high_level_block.label} Display", block_type="BasicCpp", block_class="BasicBlocks/Display", input_port_number=1, output_port_number=0
+            id=high_level_block.id,
+            name=f"Scope {high_level_block.label} Display",
+            block_type="BasicCpp",
+            block_class="BasicBlocks/Display",
+            input_port_number=1,
+            input_port_types=[input_port_type.to_string() for input_port_type in high_level_block.input_port_types],
+            output_port_number=0,
+            output_port_types=[output_port_type.to_string() for output_port_type in high_level_block.output_port_types],
         )
         port_map[("input", 0)] = (high_level_block.id, 0)
 
         return LowLevelBlockStructure([block], [], port_map)
-    
-    def _get_block_render_information(self, high_level_block):
-        render_information = BlockRenderInformation()
 
-        render_information.input_ports =1
-        render_information.output_ports = 0
-
-        render_information.text = "Scope"
-
-        return render_information
-    
     def _get_block_html(self, high_level_block, pslk_path):
         with open(pslk_path, "r") as f:
             system_json = json.load(f)
@@ -81,7 +75,7 @@ class NeuronPlugin(pysyslink_toolkit.BlockLibraryPlugin):
             plot_data[display_id] = {"times": times, "values": values}
 
         fig = plt.figure()
-        plt.plot(plot_data[high_level_block.id]["times"], plot_data[high_level_block.id]["values"])
+        plt.plot(plot_data["BasicCppBlock/" + high_level_block.id]["times"], plot_data["BasicCppBlock/" + high_level_block.id]["values"])
         html_str = mpld3.fig_to_html(fig)
         
         return html_str

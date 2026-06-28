@@ -8,4 +8,14 @@ blockLibraries:
     blockTypes:
       - name: scope
         inputPortNumber: 1
+        inputPortTypes:
+          all:
+            port_category: Inherited
+            supported_port_types_for_inheritance: 
+              - FullySupportedSignalValueType.Any
         outputPortNumber: 0
+        outputPortTypes:
+          all:
+            port_category: Inherited
+            supported_port_types_for_inheritance: 
+              - FullySupportedSignalValueType.Any
