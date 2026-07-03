@@ -52,6 +52,35 @@ async def run_simulation(toolkit_config_path: str | None, low_level_system: str,
 
     return result
 
+async def compile_and_run_simulation(toolkit_config_path: str, pslk_path: str, low_level_system_yaml_path: str, sim_config_path: str) -> dict:
+    print("pslkPath on run_simulation: {}".format(pslk_path))
+    pslk_base, pslk_ext = os.path.splitext(pslk_path)
+    if pslk_ext.lower() == ".pslk":
+        default_low_level = pslk_base + "_low_level_system.yaml"
+    else:
+        default_low_level = pslk_path + "_low_level_system.yaml"
+
+    print(f"Low-level system YAML path: {low_level_system_yaml_path}")
+
+    # Compile high-level to low-level YAML
+    result = compile_system(
+        toolkit_config_path,
+        pslk_path,
+        low_level_system_yaml_path
+    )
+    print(f"Compilation result: {result}")
+
+    if result != 'success':
+        raise RuntimeError(f"Compilation failed with message: {result}")
+
+
+    result = await run_simulation(
+        toolkit_config_path,
+        low_level_system_yaml_path,
+        sim_config_path
+    )
+    return result
+
 def get_available_block_libraries(toolkit_config_path: str | None) -> List[BlockLibraryConfig]:
     """
     Return all available libraries and blocks from loaded plugins.

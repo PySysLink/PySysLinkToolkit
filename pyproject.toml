@@ -22,3 +22,6 @@ build-backend = "setuptools.build_meta"
 
 [project.optional-dependencies]
 test = ["pytest"]
+
+[project.scripts]
+pysyslink = "pysyslink_toolkit.cli:main"
