@@ -1,0 +1,51 @@
+pluginName: subsystems_plugin
+pluginType: highLevelBlockLibrary
+blockType: high_level
+metadata:
+  pythonFilename: subsystems_plugin.py
+blockLibraries:
+  - name: subsystems_library
+    blockTypes:
+      - name: input_port
+        inputPortNumber: 0
+        inputPortTypes:
+          all:
+            port_category: Inherited
+            supported_port_types_for_inheritance: 
+              - FullySupportedSignalValueType.Any
+        outputPortNumber: 1
+        outputPortTypes:
+          all:
+            port_category: Inherited
+            supported_port_types_for_inheritance: 
+              - FullySupportedSignalValueType.Any
+        renderInformation:
+          blockShape: circle
+      - name: output_port
+        inputPortNumber: 1
+        inputPortTypes:
+          all:
+            port_category: Inherited
+            supported_port_types_for_inheritance: 
+              - FullySupportedSignalValueType.Any
+        outputPortNumber: 0
+        outputPortTypes:
+          all:
+            port_category: Inherited
+            supported_port_types_for_inheritance: 
+              - FullySupportedSignalValueType.Any
+        renderInformation:
+          blockShape: circle
+      - name: subsystem
+        inputPortNumber: 0
+        inputPortTypes:
+          all:
+            port_category: Inherited
+            supported_port_types_for_inheritance: 
+              - FullySupportedSignalValueType.Any
+        outputPortNumber: 0
+        outputPortTypes:
+          all:
+            port_category: Inherited
+            supported_port_types_for_inheritance: 
+              - FullySupportedSignalValueType.Any

@@ -1,6 +1,7 @@
 from ast import Dict
 from copy import deepcopy
 import importlib
+from importlib import resources
 import inspect
 import pathlib
 from typing import Any, List
@@ -220,9 +221,23 @@ def _parse_block_library_configs_from_paths(paths: List[str]) -> List[BlockLibra
 
     return plugin_configs
 
+def _get_default_dir_from_package() -> str | None:
+    try:
+        pkg_files = resources.files("pysyslink_toolkit") / "block_libraries" / "system"
+        # resources.files may not be a real filesystem path; use as_file to get a temp dir
+        with resources.as_file(pkg_files) as p:
+            if p.exists():
+                return str(p)
+    except Exception:
+        return None
 
 def load_block_library_plugins_from_paths(paths: List[str]) -> list[BlockLibraryPlugin]:
-    plugin_configs = _parse_block_library_configs_from_paths(paths)
+    default_path = _get_default_dir_from_package()
+    all_paths = list(paths)
+    if default_path:
+        all_paths.insert(0, default_path)
+
+    plugin_configs = _parse_block_library_configs_from_paths(all_paths)
     
     plugins: list[BlockLibraryPlugin] = []
     
