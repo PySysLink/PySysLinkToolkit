@@ -7,6 +7,7 @@ import traceback
 import yaml
 from typing import Any, Callable, Dict, List
 
+from pysyslink_toolkit.SubsystemRenderInformation import SubsystemRenderInformation
 from pysyslink_toolkit.HighLevelBlock import HighLevelBlock
 from pysyslink_toolkit.HighLevelSystem import HighLevelSystem
 from pysyslink_toolkit.LowLevelBlockStructure import LowLevelBlockStructure
@@ -17,6 +18,7 @@ from pysyslink_toolkit.block_libraries.ParseBlockLibraries import load_block_lib
 from pysyslink_toolkit.compile_system import compile_pslk_to_yaml
 from pysyslink_toolkit.simulate_system import simulate_system
 from pysyslink_toolkit.TextFileManager import load_yaml_file
+from pysyslink_toolkit.subsystems.SubsystemRenderInfoManager import _get_subsystem_render_information
 from pysyslink_toolkit.toolkit_config.ParseToolkitConfig import parse_toolkit_config
 
 def compile_system(toolkit_config_path: str, pslk_path: str, output_yaml_path: str) -> str:
@@ -115,6 +117,19 @@ def get_block_render_information(toolkit_config_path: str | None, block_data: Di
         except Exception as e:
             raise RuntimeError(f"Exception while getting block render information: {e}")
     raise RuntimeError(f"No plugin could provide render information for block: {block.block_type}")
+
+def get_subsystem_render_information(toolkit_config_path: str | None, subsystem_data: Dict[str, Any], pslk_path: str) -> SubsystemRenderInformation:
+    """
+    Return render information for a subsystem.
+    """
+    toolkit_config = parse_toolkit_config(toolkit_config_path)
+    system_json = load_yaml_file(pslk_path)
+
+    high_level_system, parameter_environment_dict = HighLevelSystem.from_dict(pslk_path, system_json)
+    
+    subsystem_render_info = _get_subsystem_render_information(toolkit_config, parameter_environment_dict, subsystem_data, pslk_path)
+    return subsystem_render_info
+    
 
 def get_block_html(toolkit_config_path: str | None, block_data: Dict[str, Any], pslk_path: str) -> str:
     toolkit_config = parse_toolkit_config(toolkit_config_path)

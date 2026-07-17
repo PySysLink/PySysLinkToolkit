@@ -48,16 +48,19 @@ def _normalize_block_type(block_type_dict: dict) -> dict:
 
 def _normalize_plugin_dict(data: dict) -> dict:
     """Normalize YAML structure before dacite deserialization."""
+    plugin_type = data.get("pluginType")
 
     for i, common_block_type in enumerate(data.get("commonBlocks", [])):
         data["commonBlocks"][i] = _normalize_block_type(common_block_type)
 
     for library in data.get("blockLibraries", []):
+        if plugin_type is not None and "pluginType" not in library:
+            library["pluginType"] = plugin_type
+
         for i, block_type in enumerate(library.get("blockTypes", [])):
             library["blockTypes"][i] = _normalize_block_type(block_type)
 
     return data
-
 
 def _solve_block_library_config_common_blocks(plugin: BlockLibraryPluginConfig) -> BlockLibraryPluginConfig:
     """
@@ -100,6 +103,7 @@ def _solve_block_library_config_common_blocks(plugin: BlockLibraryPluginConfig) 
         solved_libraries.append(
             BlockLibraryConfig(
                 name=library.name,
+                pluginType=plugin.pluginType,
                 blockTypes=solved_blocks,
                 metadata=deepcopy(library.metadata),
             )
@@ -181,6 +185,7 @@ def _solve_single_block_with_common(block: BlockTypeConfig, common_map: dict[str
 
     return solved
 
+
 def _parse_block_library_configs_from_paths(paths: List[str]) -> List[BlockLibraryPluginConfig]:
 
     plugin_configs: List[BlockLibraryPluginConfig] = []
@@ -242,7 +247,7 @@ def load_block_library_plugins_from_paths(paths: List[str]) -> list[BlockLibrary
     plugins: list[BlockLibraryPlugin] = []
     
     for plugin_config in plugin_configs:
-        if plugin_config.pluginType == BlockLibraryPluginType.HighLevelBlockLibrary:
+        if plugin_config.pluginType in (BlockLibraryPluginType.HighLevelBlockLibrary, BlockLibraryPluginType.SystemLibrary):
             python_filename = plugin_config.metadata["pythonFilename"]
             py_path = pathlib.Path(plugin_config.yaml_filename).parent / python_filename
             module_name = py_path.stem # py_path.stem is correct, it returns the module name
@@ -304,6 +309,7 @@ def resolve_block_libraries(libraries: List[BlockLibraryConfig]) -> List[BlockLi
 
         resolved_lib = BlockLibraryConfig(
             name=lib.name,
+            pluginType=lib.pluginType,
             blockTypes=resolved_block_types,
             metadata=lib.metadata.copy(),
         )

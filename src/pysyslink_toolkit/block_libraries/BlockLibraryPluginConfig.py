@@ -229,12 +229,14 @@ class BlockTypeConfig:
 @dataclass
 class BlockLibraryConfig:
     name: str
+    pluginType: str
     blockTypes: List[BlockTypeConfig] = field(default_factory=list)
     metadata: dict = field(default_factory=dict)
 
 class BlockLibraryPluginType(enum.Enum):
     CoreBlockLibrary = "coreBlockLibrary"
     HighLevelBlockLibrary = "highLevelBlockLibrary"
+    SystemLibrary = "systemLibrary"
 
 
 @dataclass

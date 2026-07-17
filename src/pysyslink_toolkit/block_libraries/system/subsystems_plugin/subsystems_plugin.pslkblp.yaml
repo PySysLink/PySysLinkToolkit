@@ -1,5 +1,5 @@
 pluginName: subsystems_plugin
-pluginType: highLevelBlockLibrary
+pluginType: systemLibrary
 blockType: high_level
 metadata:
   pythonFilename: subsystems_plugin.py
