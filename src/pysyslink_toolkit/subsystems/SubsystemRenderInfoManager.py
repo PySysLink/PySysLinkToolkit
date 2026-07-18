@@ -30,8 +30,8 @@ def get_subsystem_port_types(subsystem_data: Dict[str, Any], pslk_path: str) -> 
     """
     input_port_number, output_port_number = get_subsystem_port_numbers(subsystem_data, pslk_path)
 
-    input_port_types = [PortType(port_category=PortCategory.inherited, supported_port_types_for_inheritance="FullySupportedSignalValueType.Any")] * input_port_number
-    output_port_types = [PortType(port_category=PortCategory.inherited, supported_port_types_for_inheritance="FullySupportedSignalValueType.Any")] * output_port_number
+    input_port_types = [PortType(port_category=PortCategory.inherited, supported_port_types_for_inheritance=['FullySupportedSignalValueType.Any'])] * input_port_number
+    output_port_types = [PortType(port_category=PortCategory.inherited, supported_port_types_for_inheritance=['FullySupportedSignalValueType.Any'])] * output_port_number
 
     return input_port_types, output_port_types
 
