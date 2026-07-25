@@ -1,6 +1,7 @@
 
 
 from enum import Enum
+import json
 import os
 import runpy
 from typing import Any, Dict, List, Optional, Tuple
@@ -136,6 +137,78 @@ class LinkData:
             "targetNodes": {k: v.to_dict() for k, v in self.target_nodes.items()},
         }
 
+
+class SubsystemData:
+    def __init__(
+        self,
+        id: str,
+        label: str,
+        input_ports: int,
+        input_port_types: List[PortType],
+        output_ports: int,
+        output_port_types: List[PortType],
+        json_data: HighLevelSystem,
+    ):
+        self.id = id
+        self.label = label
+        self.input_ports = input_ports
+        self.input_port_types = input_port_types
+        self.output_ports = output_ports
+        self.output_port_types = output_port_types
+        self.json_data = json_data
+
+    @classmethod
+    def from_dict(
+        cls,
+        data: Dict[str, Any],
+        parameter_environment_namespace: Dict[str, Any]
+    ) -> "HighLevelBlock":
+        # Required fields validation
+        required_fields = [
+            "id", "label", "inputPorts", "outputPorts", "inputPortTypes", "outputPortTypes",
+            "jsonData"
+        ]
+        missing = [field for field in required_fields if field not in data]
+        if missing:
+            raise ValueError(f"Missing required fields in SubsystemData: {', '.join(missing)}, data type: {type(data)}, raw data: {json.dumps(data, indent=4)}")
+
+        # Type and format checks
+        try:
+            block_id = str(data["id"])
+            label = str(data["label"])
+            input_ports = int(data["inputPorts"])
+            input_port_types = [PortType.from_dict(data_i) for data_i in data["inputPortTypes"]]
+            output_ports = int(data["outputPorts"])
+            output_port_types = [PortType.from_dict(data_o) for data_o in data["outputPortTypes"]]
+        except (TypeError, ValueError) as e:
+            raise ValueError(f"Invalid type for one of the HighLevelBlock fields: {e}")
+
+        raw_json_data = data["jsonData"]
+        json_data = HighLevelSystem.from_dict(raw_json_data, parameter_environment_namespace)
+
+        return cls(
+            id=block_id,
+            label=label,
+            input_ports=input_ports,
+            input_port_types=input_port_types,
+            output_ports=output_ports,
+            output_port_types=output_port_types,
+            json_data=json_data,
+        )
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "id": self.id,
+            "label": self.label,
+            "inputPorts": self.input_ports,
+            "inputPortTypes": self.input_port_types,
+            "outputPorts": self.output_ports,
+            "outputPortTypes": self.output_port_types,
+            "blockLibrary": self.block_library,
+            "blockType": self.block_type,
+            "properties": self.properties,
+        }
+
 class HighLevelSystem:
     def __init__(
         self,
@@ -143,16 +216,67 @@ class HighLevelSystem:
         initialization_python_script_path: str,
         toolkit_configuration_path: str,
         blocks: Optional[List[HighLevelBlock]],
-        links: Optional[List[LinkData]]
+        links: Optional[List[LinkData]],
+        subsystems: Optional[List[SubsystemData]]
     ):
         self.simulation_configuration = simulation_configuration
         self.initialization_python_script_path = initialization_python_script_path
         self.toolkit_configuration_path = toolkit_configuration_path
         self.blocks = blocks
         self.links = links
-        
+        self.subsystems = subsystems
+
     @classmethod
     def from_dict(
+        cls,
+        data: Dict[str, Any],
+        parameter_environment_namespace: Dict[str, Any],
+    ) -> Tuple["HighLevelSystem"]:
+        required = [
+            "simulation_configuration",
+            "initialization_python_script_path",
+            "toolkit_configuration_path",
+            "blocks",
+            "links",
+            "subsystems"
+        ]
+        missing = [f for f in required if f not in data]
+        if missing:
+            raise ValueError(f"Missing fields in HighLevelSystem: {', '.join(missing)}, raw json: {data}")
+        # parse blocks
+        raw_blocks = data["blocks"]
+        blocks = (
+            [HighLevelBlock.from_dict(b, parameter_environment_namespace) for b in raw_blocks]
+            if raw_blocks is not None
+            else None
+        )
+
+        # parse links
+        raw_links = data["links"]
+        links = (
+            [LinkData.from_dict(l, parameter_environment_namespace) for l in raw_links]
+            if raw_links is not None
+            else None
+        )
+
+        raw_subsystems = data["subsystems"]
+        subsystems = (
+            [SubsystemData.from_dict(s, parameter_environment_namespace) for s in raw_subsystems]
+            if raw_subsystems is not None
+            else None
+        )
+
+
+        return cls(
+            simulation_configuration=data["simulation_configuration"],
+            initialization_python_script_path=data["initialization_python_script_path"],
+            toolkit_configuration_path=data["toolkit_configuration_path"],
+            blocks=blocks,
+            links=links,
+            subsystems=subsystems)
+        
+    @classmethod
+    def from_dict_file(
         cls,
         reference_path_or_file: str,
         data: Dict[str, Any],
@@ -162,11 +286,12 @@ class HighLevelSystem:
             "initialization_python_script_path",
             "toolkit_configuration_path",
             "blocks",
-            "links"
+            "links",
+            "subsystems"
         ]
         missing = [f for f in required if f not in data]
         if missing:
-            raise ValueError(f"Missing fields in HighLevelSystem: {', '.join(missing)}")
+            raise ValueError(f"Missing fields in HighLevelSystem: {', '.join(missing)}, data type: {type(data)}, raw data: {json.dumps(data, indent=4)}")
 
         initialization_python_script_path = data.get("initialization_python_script_path", None)
 
@@ -190,30 +315,7 @@ class HighLevelSystem:
             parameter_environment_namespace = dict()
 
         
-        # parse blocks
-        raw_blocks = data["blocks"]
-        blocks = (
-            [HighLevelBlock.from_dict(b, parameter_environment_namespace) for b in raw_blocks]
-            if raw_blocks is not None
-            else None
-        )
-
-        # parse links
-        raw_links = data["links"]
-        links = (
-            [LinkData.from_dict(l, parameter_environment_namespace) for l in raw_links]
-            if raw_links is not None
-            else None
-        )
-
-
-        return (cls(
-            simulation_configuration=data["simulation_configuration"],
-            initialization_python_script_path=data["initialization_python_script_path"],
-            toolkit_configuration_path=data["toolkit_configuration_path"],
-            blocks=blocks,
-            links=links
-        ), parameter_environment_namespace)
+        return (HighLevelSystem.from_dict(data, parameter_environment_namespace), parameter_environment_namespace)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -222,9 +324,59 @@ class HighLevelSystem:
             "toolkit_configuration_path": self.toolkit_configuration_path,
             "blocks": [b.to_dict() for b in self.blocks] if self.blocks is not None else None,
             "links": [l.to_dict() for l in self.links] if self.links is not None else None,
+            "subsystems": [s.to_dict() for s in self.subsystems] if self.subsystems is not None else None
         }
-    
 
+
+    def _prefix_ids(self, prefix: str):
+
+        def rename(id: str) -> str:
+            return f"{prefix}_{id}"
+
+        for block in self.blocks:
+            block.id = rename(block.id)
+
+        for link in self.links:
+            link.id = rename(link.id)
+            link.source_id = rename(link.source_id)
+
+            for target in link.target_nodes.values():
+                target.target_id = rename(target.target_id)
+
+            link.target_nodes = {
+                rename(segment_id): target
+                    for segment_id, target in link.target_nodes.items()
+            }
+
+            def visit(node: SegmentNode):
+                node.id = rename(node.id)
+                for child in node.children:
+                    visit(child)
+
+            visit(link.segment_node)
+            
+    def flatten_subsystems(self):
+
+        if not self.subsystems:
+            return
+
+        if self.blocks is None:
+            self.blocks = []
+
+        if self.links is None:
+            self.links = []
+
+        for subsystem in self.subsystems:
+
+            subsystem.json_data.flatten_subsystems()
+
+            subsystem.json_data._prefix_ids(subsystem.id)
+
+            self.blocks.extend(subsystem.json_data.blocks or [])
+            self.links.extend(subsystem.json_data.links or [])
+
+        self.subsystems = []
+            
     def propagate_and_validate_port_types(self) -> None:
         """
         Resolve inherited port types by propagating through links and inheritance groups.

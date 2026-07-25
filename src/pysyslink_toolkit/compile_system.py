@@ -56,7 +56,7 @@ def compile_pslk_to_yaml(pslk_path: str, toolkit_config_path: str, output_yaml_p
     toolkit_config = parse_toolkit_config(toolkit_config_path)
     block_library_plugins = load_block_library_plugins_from_paths(toolkit_config.plugin_paths)
 
-    high_level_system, parameter_environment_namespace = HighLevelSystem.from_dict(pslk_path, system_json)
+    high_level_system, parameter_environment_namespace = HighLevelSystem.from_dict_file(pslk_path, system_json)
 
     high_level_system.propagate_and_validate_port_types()
 

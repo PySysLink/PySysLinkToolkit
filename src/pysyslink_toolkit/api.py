@@ -102,7 +102,7 @@ def get_block_render_information(toolkit_config_path: str | None, block_data: Di
     block_library_plugins = load_block_library_plugins_from_paths(toolkit_config.plugin_paths)
     system_json = load_yaml_file(pslk_path)
 
-    high_level_system, parameter_environment_dict = HighLevelSystem.from_dict(pslk_path, system_json)
+    high_level_system, parameter_environment_dict = HighLevelSystem.from_dict_file(pslk_path, system_json)
     
     block = HighLevelBlock.from_dict(block_data, parameter_environment_dict)
     print(f"Block data for render: {block_data}")
@@ -125,7 +125,7 @@ def get_subsystem_render_information(toolkit_config_path: str | None, subsystem_
     toolkit_config = parse_toolkit_config(toolkit_config_path)
     system_json = load_yaml_file(pslk_path)
 
-    high_level_system, parameter_environment_dict = HighLevelSystem.from_dict(pslk_path, system_json)
+    high_level_system, parameter_environment_dict = HighLevelSystem.from_dict_file(pslk_path, system_json)
     
     subsystem_render_info = _get_subsystem_render_information(toolkit_config, parameter_environment_dict, subsystem_data, pslk_path)
     return subsystem_render_info
@@ -137,7 +137,7 @@ def get_block_html(toolkit_config_path: str | None, block_data: Dict[str, Any], 
 
     system_json = load_yaml_file(pslk_path)
 
-    high_level_system, parameter_environment_dict = HighLevelSystem.from_dict(pslk_path, system_json)
+    high_level_system, parameter_environment_dict = HighLevelSystem.from_dict_file(pslk_path, system_json)
     
     block = HighLevelBlock.from_dict(block_data, parameter_environment_dict)    
     for plugin in block_library_plugins:
