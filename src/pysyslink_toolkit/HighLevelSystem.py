@@ -354,7 +354,145 @@ class HighLevelSystem:
                     visit(child)
 
             visit(link.segment_node)
-            
+
+    def _inline_subsystem(self, subsystem: SubsystemData):
+
+        inner = subsystem.json_data
+
+        # Prefix all ids
+        inner._prefix_ids(subsystem.id)
+
+        # --------------------------------------------------------
+        # Build lookup tables
+        # --------------------------------------------------------
+
+        incoming_links = {}   # (target_id, port) -> [LinkData]
+        outgoing_links = {}   # (source_id, port) -> [LinkData]
+
+        for link in self.links:
+
+            outgoing_links.setdefault(
+                (link.source_id, link.source_port), []
+            ).append(link)
+
+            for target in link.target_nodes.values():
+                incoming_links.setdefault(
+                    (target.target_id, target.port), []
+                ).append(link)
+
+        # --------------------------------------------------------
+        # Find subsystem interface blocks
+        # --------------------------------------------------------
+
+        input_blocks = {}
+        output_blocks = {}
+
+        for block in inner.blocks:
+
+            if block.block_library != "subsystems_library":
+                continue
+
+            port = int(block.properties["PortIndex"]["value"])
+
+            if block.block_type == "input_port":
+                input_blocks[port] = block
+
+            elif block.block_type == "output_port":
+                output_blocks[port] = block
+
+        # --------------------------------------------------------
+        # INPUTS
+        # --------------------------------------------------------
+
+        inner_links_to_delete = []
+
+        for port, input_block in input_blocks.items():
+
+            outer_links = incoming_links.get((subsystem.id, port), [])
+
+            if len(outer_links) != 1:
+                raise ValueError(
+                    f"Subsystem input {port} must have exactly one incoming link."
+                )
+
+            outer = outer_links[0]
+
+            # link leaving input_port
+            produced = [
+                l for l in inner.links
+                if l.source_id == input_block.id
+            ]
+
+            if len(produced) != 1:
+                raise ValueError(
+                    f"input_port {input_block.id} must have one outgoing link."
+                )
+
+            inner_link = produced[0]
+
+            # append every internal destination
+            outer.target_nodes.update(inner_link.target_nodes)
+
+            inner_links_to_delete.append(inner_link)
+
+        # --------------------------------------------------------
+        # OUTPUTS
+        # --------------------------------------------------------
+
+        for port, output_block in output_blocks.items():
+
+            producer = [
+                l for l in inner.links
+                if any(
+                    t.target_id == output_block.id
+                    for t in l.target_nodes.values()
+                )
+            ]
+
+            if len(producer) != 1:
+                raise ValueError(
+                    f"output_port {output_block.id} must have one incoming link."
+                )
+
+            producer = producer[0]
+
+            outer_links = outgoing_links.get((subsystem.id, port), [])
+
+            for outer in outer_links:
+
+                outer.source_id = producer.source_id
+                outer.source_port = producer.source_port
+                outer.source_x = producer.source_x
+                outer.source_y = producer.source_y
+
+            producer.target_nodes = {
+                seg_id: target
+                for seg_id, target in producer.target_nodes.items()
+                if target.target_id != output_block.id
+            }
+
+            if len(producer.target_nodes) == 0:
+                inner_links_to_delete.append(producer)
+
+        # Remove interface links
+        inner.links = [
+            l for l in inner.links
+            if l not in inner_links_to_delete
+        ]
+
+        # Remove interface blocks
+        inner.blocks = [
+            b for b in inner.blocks
+            if not (
+                b.block_library == "subsystems_library"
+                and b.block_type in ("input_port", "output_port")
+            )
+        ]
+
+        # Merge
+        self.blocks.extend(inner.blocks)
+        self.links.extend(inner.links)
+        
     def flatten_subsystems(self):
 
         if not self.subsystems:
@@ -367,15 +505,32 @@ class HighLevelSystem:
             self.links = []
 
         for subsystem in self.subsystems:
-
             subsystem.json_data.flatten_subsystems()
 
-            subsystem.json_data._prefix_ids(subsystem.id)
-
-            self.blocks.extend(subsystem.json_data.blocks or [])
-            self.links.extend(subsystem.json_data.links or [])
+            self._inline_subsystem(subsystem)
 
         self.subsystems = []
+
+        links_to_remove = []
+
+        # Cleanup dangling links
+        for link in self.links:
+            if link.source_id not in [b.id for b in self.blocks]:
+                links_to_remove.append(link)
+
+            target_nodes_to_delete = []
+            for key, target_node in link.target_nodes.items():
+                if target_node.target_id not in [b.id for b in self.blocks]:
+                    target_nodes_to_delete.append(key)
+
+            for key in target_nodes_to_delete:
+                del link.target_nodes[key]
+
+        self.links = [
+            l for l in self.links
+            if l not in links_to_remove
+        ]
+                    
             
     def propagate_and_validate_port_types(self) -> None:
         """

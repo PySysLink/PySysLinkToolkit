@@ -21,6 +21,10 @@ blockLibraries:
               - FullySupportedSignalValueType.Any
         renderInformation:
           blockShape: circle
+        configurationValues:
+          - name: PortIndex
+            defaultValue: 0
+            type: int
       - name: output_port
         inputPortNumber: 1
         inputPortTypes:
@@ -36,6 +40,10 @@ blockLibraries:
               - FullySupportedSignalValueType.Any
         renderInformation:
           blockShape: circle
+        configurationValues:
+          - name: PortIndex
+            defaultValue: 0
+            type: int
       - name: subsystem
         inputPortNumber: 0
         inputPortTypes:
