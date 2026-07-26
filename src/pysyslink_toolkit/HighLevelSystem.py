@@ -366,8 +366,8 @@ class HighLevelSystem:
         # Build lookup tables
         # --------------------------------------------------------
 
-        incoming_links = {}   # (target_id, port) -> [LinkData]
-        outgoing_links = {}   # (source_id, port) -> [LinkData]
+        incoming_links: Dict[Tuple[str, int], List[LinkData]] = {}   # (target_id, port) -> [LinkData]
+        outgoing_links: Dict[Tuple[str, int], List[LinkData]] = {}   # (source_id, port) -> [LinkData]
 
         for link in self.links:
 
@@ -432,6 +432,9 @@ class HighLevelSystem:
 
             # append every internal destination
             outer.target_nodes.update(inner_link.target_nodes)
+
+            inner_link.source_id = outer.source_id
+            inner_link.source_port = outer.source_port
 
             inner_links_to_delete.append(inner_link)
 
