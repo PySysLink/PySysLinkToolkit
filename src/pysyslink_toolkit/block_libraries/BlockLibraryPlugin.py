@@ -63,6 +63,24 @@ class BlockLibraryPlugin(abc.ABC):
         else:
             render_information.output_port_types = []
 
+        render_information.input_port_labels = []
+        render_information.output_port_labels = []
+
+        for i in range(render_information.input_ports):
+            if len(block_type_config.inputPortLabels) > i:
+                render_information.input_port_labels.append(block_type_config.inputPortLabels[i])
+            else:
+                render_information.input_port_labels.append(None)
+
+        for i in range(render_information.output_ports):
+            if len(block_type_config.outputPortLabels) > i:
+                render_information.output_port_labels.append(block_type_config.outputPortLabels[i])
+            else:
+                render_information.output_port_labels.append(None)
+
+        print(f"Render info for block: {high_level_block.id}, input_port_labels: {render_information.input_port_labels}, output_port_labels: {render_information.output_port_labels}")
+        print(f"Block type config: {block_type_config}")
+        
         return render_information
 
     def get_block_html(self, high_level_block: HighLevelBlock, pslk_path: str) -> str:

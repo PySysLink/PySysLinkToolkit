@@ -30,6 +30,10 @@ class BlockTypeConfig:
 
     inputPortTypes: dict[str | int, PortTypeConfig] = field(default_factory=dict)
     outputPortTypes: dict[str | int, PortTypeConfig] = field(default_factory=dict)
+
+    inputPortLabels: list[str] = field(default_factory=list)
+    outputPortLabels: list[str] = field(default_factory=list)
+
     commonBlock: str | None = None
     configurationValues: Dict[str, ConfigurationValue] = field(default_factory=dict)
     blockShape: BlockShape = BlockShape.square

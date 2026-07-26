@@ -159,6 +159,12 @@ def _solve_single_block_with_common(block: BlockTypeConfig, common_map: dict[str
     merged_output_types = deepcopy(base.outputPortTypes)
     merged_output_types.update(deepcopy(block.outputPortTypes))
 
+    merged_input_labels = deepcopy(base.inputPortLabels)
+    merged_input_labels.extend(deepcopy(block.inputPortLabels))
+
+    merged_output_labels = deepcopy(base.outputPortLabels)
+    merged_output_labels.extend(deepcopy(block.outputPortLabels))
+    
     # ---------------------------------------------------------
     # Child overrides parent when explicitly set
     # ---------------------------------------------------------
@@ -171,6 +177,9 @@ def _solve_single_block_with_common(block: BlockTypeConfig, common_map: dict[str
 
         inputPortTypes=merged_input_types,
         outputPortTypes=merged_output_types,
+
+        inputPortLabels=merged_input_labels,
+        outputPortLabels=merged_output_labels,
 
         configurationValues=merged_config,
 
