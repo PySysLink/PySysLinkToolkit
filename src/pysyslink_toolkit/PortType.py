@@ -8,6 +8,10 @@ class FullySupportedSignalValueType(Enum):
     Bool = "bool"
     ComplexDouble = "complex_double"
     String = "string"
+    IntMatrix = "matrix<int>"
+    DoubleMatrix = "matrix<double>"
+    BoolMatrix = "matrix<bool>"
+    ComplexMatrix = "matrix<complex_double>"
 
 class PortCategory(Enum):
     fully_supported_signal_value = "FullySupportedSignalValue"

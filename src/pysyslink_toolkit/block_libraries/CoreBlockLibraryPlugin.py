@@ -45,18 +45,6 @@ class CoreBlockLibraryPlugin(BlockLibraryPlugin):
                     converted[key + "[string]"] = str(value)
                 elif parameter_type == "complex_double":
                     converted[key + "[complex_double]"] = str(complex(value))
-                elif parameter_type.endswith("[]") and isinstance(value, list):
-                    base_type = parameter_type[:-2]
-                    if base_type == "double":
-                        converted[key + "[vector<double>]"] = [float(v) for v in value]
-                    elif base_type == "int":
-                        converted[key + "[vector<int>]"] = [int(v) for v in value]
-                    elif base_type == "string":
-                        converted[key + "[vector<string>]"] = [str(v) for v in value]
-                    elif base_type == "complex_double":
-                        converted[key + "[vector<complex_double>]"] = [str(complex(v)) for v in value]
-                    else:
-                        converted[key + "[vector<string>]"] = [str(v) for v in value]
                 elif parameter_type == "matrix<int>":
                     converted[key + "[matrix<int>]"] = str(value)
 
@@ -69,21 +57,31 @@ class CoreBlockLibraryPlugin(BlockLibraryPlugin):
                 elif parameter_type == "matrix<complex_double>":
                     converted[key + "[matrix<complex_double>]"] = str(value)
 
-                #
-                # vectors of matrices
-                #
+                elif parameter_type.endswith("[]") and isinstance(value, list):
+                    base_type = parameter_type[:-2]
+                    if base_type == "double":
+                        converted[key + "[vector<double>]"] = [float(v) for v in value]
+                    elif base_type == "int":
+                        converted[key + "[vector<int>]"] = [int(v) for v in value]
+                    elif base_type == "string":
+                        converted[key + "[vector<string>]"] = [str(v) for v in value]
+                    elif base_type == "complex_double":
+                        converted[key + "[vector<complex_double>]"] = [str(complex(v)) for v in value]
 
-                elif parameter_type == "matrix<int>[]":
-                    converted[key + "[vector<matrix<int>>]"] = [str(v) for v in value]
+                    elif base_type == "matrix<int>":
+                        converted[key + "[vector<matrix<int>>]"] = [str(v) for v in value]
 
-                elif parameter_type == "matrix<double>[]":
-                    converted[key + "[vector<matrix<double>>]"] = [str(v) for v in value]
+                    elif base_type == "matrix<double>":
+                        converted[key + "[vector<matrix<double>>]"] = [str(v) for v in value]
 
-                elif parameter_type == "matrix<bool>[]":
-                    converted[key + "[vector<matrix<bool>>]"] = [str(v) for v in value]
+                    elif base_type == "matrix<bool>":
+                        converted[key + "[vector<matrix<bool>>]"] = [str(v) for v in value]
 
-                elif parameter_type == "matrix<complex_double>[]":
-                    converted[key + "[vector<matrix<complex_double>>]"] = [str(v) for v in value]
+                    elif base_type == "matrix<complex_double>":
+                        converted[key + "[vector<matrix<complex_double>>]"] = [str(v) for v in value]
+
+                    else:
+                        converted[key + "[vector<string>]"] = [str(v) for v in value]
 
                 else:
                     converted[key + "[string]"] = value
@@ -103,6 +101,9 @@ class CoreBlockLibraryPlugin(BlockLibraryPlugin):
             high_level_block.properties
         )
         # Create a LowLevelBlock with the same attributes as the high-level block
+
+        print(f"Compiling block {high_level_block.id} of type {high_level_block.block_type}")
+        print(f"Output port types: {high_level_block.output_port_types}, to string: {[output_port_type.to_string() for output_port_type in high_level_block.output_port_types]}")
 
         low_level_block = LowLevelBlock(
             id=high_level_block.id,
