@@ -35,6 +35,39 @@ def get_subsystem_port_types(subsystem_data: Dict[str, Any], pslk_path: str) -> 
 
     return input_port_types, output_port_types
 
+def get_subsytem_port_labels(subsystem_data: Dict[str, Any], pslk_path: str) -> Tuple[str | None]:
+    json_data = subsystem_data.get("jsonData", {})
+    blocks = json_data.get("blocks", [])
+
+    input_blocks = []
+    output_blocks = []
+
+    for block in blocks:
+        block_type = block.get("blockType")
+        if block_type == "input_port":
+            input_blocks.append(block)
+        elif block_type == "output_port":
+            output_blocks.append(block)
+
+    input_labels = []
+    output_labels = []
+
+    for i in range(len(input_blocks)):
+        block_i = [block for block in input_blocks if int(block.get("properties", {}).get("PortIndex", {}).get("value", None)) == i]
+        if len(block_i) == 0:
+            input_labels.append(None)
+        else:
+            input_labels.append(block_i[0].get("label", "No label"))
+
+    for i in range(len(output_blocks)):
+        block_i = [block for block in output_blocks if int(block.get("properties", {}).get("PortIndex", {}).get("value", None)) == i]
+        if len(block_i) == 0:
+            output_labels.append(None)
+        else:
+            output_labels.append(str(block_i[0].get("label", "No label")))
+
+    return (input_labels, output_labels)
+
 def _get_subsystem_render_information(toolkit_config: ToolkitConfig, parameter_environment_dict: Dict[str, Any], subsystem_data: Dict[str, Any], pslk_path: str) -> SubsystemRenderInformation:
     """
     Return render information for a subsystem.
@@ -44,6 +77,7 @@ def _get_subsystem_render_information(toolkit_config: ToolkitConfig, parameter_e
 
     render_information.input_ports, render_information.output_ports = get_subsystem_port_numbers(subsystem_data, pslk_path)
     render_information.input_port_types, render_information.output_port_types = get_subsystem_port_types(subsystem_data, pslk_path)
+    render_information.input_port_labels, render_information.output_port_labels = get_subsytem_port_labels(subsystem_data, pslk_path)
 
     return render_information
 

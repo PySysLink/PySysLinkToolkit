@@ -58,6 +58,9 @@ class BlockRenderInformation:
     input_port_types: list[PortType] = []
     output_port_types: list[PortType] = []
 
+    input_port_labels: list[str | None] = []
+    output_port_labels: list[str | None] = []
+
     def to_dict(self):
         return {
             "shape": self.shape.value,
@@ -74,7 +77,9 @@ class BlockRenderInformation:
             "input_ports": self.input_ports,
             "output_ports": self.output_ports,
             "input_port_types": [pt.to_dict() for pt in self.input_port_types],
-            "output_port_types": [pt.to_dict() for pt in self.output_port_types]
+            "output_port_types": [pt.to_dict() for pt in self.output_port_types],
+            "input_port_labels": self.input_port_labels,
+            "output_port_labels": self.output_port_labels,
         }
 
     def to_json(self):
