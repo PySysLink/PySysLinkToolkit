@@ -1,10 +1,13 @@
 from typing import Any, Dict
 
+import numpy as np
+
 from pysyslink_toolkit.BlockRenderInformation import BlockRenderInformation
 from pysyslink_toolkit.HighLevelBlock import HighLevelBlock
 from pysyslink_toolkit.LowLevelBlockStructure import LowLevelBlock, LowLevelBlockStructure
 from pysyslink_toolkit.block_libraries.BlockLibraryPlugin import BlockLibraryPlugin
 from pysyslink_toolkit.block_libraries.BlockLibraryPluginConfig import BlockLibraryPluginConfig
+
 
 
 class CoreBlockLibraryPlugin(BlockLibraryPlugin):
@@ -30,7 +33,7 @@ class CoreBlockLibraryPlugin(BlockLibraryPlugin):
                 raise ValueError(f"Property {key} not defined in block type {block_type_name} of library {block_library_name}")
             
             # Convert based on expected_type
-            print(f"Converting property {key} with value {value} to expected type {parameter_type}")
+            print(f"Converting property {key} with value {value} of type {type(value)} to expected type {parameter_type}")
             try:
                 if parameter_type == "double":
                     converted[key + "[double]"] = float(value)
@@ -41,7 +44,7 @@ class CoreBlockLibraryPlugin(BlockLibraryPlugin):
                 elif parameter_type == "string":
                     converted[key + "[string]"] = str(value)
                 elif parameter_type == "complex_double":
-                    converted[key + "[complex_double]"] = complex(value)
+                    converted[key + "[complex_double]"] = str(complex(value))
                 elif parameter_type.endswith("[]") and isinstance(value, list):
                     base_type = parameter_type[:-2]
                     if base_type == "double":
@@ -51,9 +54,37 @@ class CoreBlockLibraryPlugin(BlockLibraryPlugin):
                     elif base_type == "string":
                         converted[key + "[vector<string>]"] = [str(v) for v in value]
                     elif base_type == "complex_double":
-                        converted[key + "[vector<complex_double>]"] = [complex(v) for v in value]
+                        converted[key + "[vector<complex_double>]"] = [str(complex(v)) for v in value]
                     else:
                         converted[key + "[vector<string>]"] = [str(v) for v in value]
+                elif parameter_type == "matrix<int>":
+                    converted[key + "[matrix<int>]"] = str(value)
+
+                elif parameter_type == "matrix<double>":
+                    converted[key + "[matrix<double>]"] = str(value)
+
+                elif parameter_type == "matrix<bool>":
+                    converted[key + "[matrix<bool>]"] = str(value)
+
+                elif parameter_type == "matrix<complex_double>":
+                    converted[key + "[matrix<complex_double>]"] = str(value)
+
+                #
+                # vectors of matrices
+                #
+
+                elif parameter_type == "matrix<int>[]":
+                    converted[key + "[vector<matrix<int>>]"] = [str(v) for v in value]
+
+                elif parameter_type == "matrix<double>[]":
+                    converted[key + "[vector<matrix<double>>]"] = [str(v) for v in value]
+
+                elif parameter_type == "matrix<bool>[]":
+                    converted[key + "[vector<matrix<bool>>]"] = [str(v) for v in value]
+
+                elif parameter_type == "matrix<complex_double>[]":
+                    converted[key + "[vector<matrix<complex_double>>]"] = [str(v) for v in value]
+
                 else:
                     converted[key + "[string]"] = value
             except Exception as e:
