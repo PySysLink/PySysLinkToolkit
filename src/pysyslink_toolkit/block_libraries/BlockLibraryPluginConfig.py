@@ -257,6 +257,7 @@ class BlockTypeConfig:
         )
 
     def _resolve_labels(self, cfg: PortLabelConfig, expected_count, configuration_values):
+        print(f"Calling resolve labels with config {cfg}, configuration values {configuration_values}")
         variables = dict(configuration_values)
         variables["PortCount"] = expected_count
 
@@ -274,7 +275,9 @@ class BlockTypeConfig:
         # Generated labels
         # -----------------------------------------
         elif cfg.generator is not None:
-            result = SafeEvaluator(variables).evaluate(cfg.generator)
+            tree = ast.parse(cfg.generator, mode="eval")
+            evaluator = SafeEvaluator(variables)
+            result = evaluator.visit(tree)
 
         # -----------------------------------------
         # Nothing specified
@@ -297,6 +300,7 @@ class BlockTypeConfig:
                     f"Label {i} must be a string or None, got {type(x).__name__}."
                 )
 
+        print(f"Result of resolve labels is: {result}")
         return result
 
 @dataclass
