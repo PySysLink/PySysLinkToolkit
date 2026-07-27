@@ -18,7 +18,9 @@ from pysyslink_toolkit.block_libraries.SafeEvaluator import SafeEvaluator
 @dataclass
 class ConfigurationValue:
     name: str
-    defaultValue: Union[float, int, str, List[float], List[int], List[str], None]
+    defaultValue: Union[float, int, str, complex, bool, 
+                        List[float], List[int], List[str], List[complex], List[bool], 
+                        List[List[float]], List[List[int]], List[List[str]], List[List[complex]], List[List[bool]], None]
     type: str
     metadata: dict = field(default_factory=dict)
 
