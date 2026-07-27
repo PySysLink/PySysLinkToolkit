@@ -26,6 +26,11 @@ class ConfigurationValue:
     metadata: dict = field(default_factory=dict)
 
 @dataclass
+class PortLabelConfig:
+    labels: list[str] | None = None
+    generator: str | None = None
+
+@dataclass
 class BlockTypeConfig:
     name: str
     inputPortNumber: int | str = "NullForCommonBlock"
@@ -34,8 +39,8 @@ class BlockTypeConfig:
     inputPortTypes: dict[str | int, PortTypeConfig] = field(default_factory=dict)
     outputPortTypes: dict[str | int, PortTypeConfig] = field(default_factory=dict)
 
-    inputPortLabels: list[str] = field(default_factory=list)
-    outputPortLabels: list[str] = field(default_factory=list)
+    inputPortLabels: PortLabelConfig = field(default_factory=PortLabelConfig)
+    outputPortLabels: PortLabelConfig = field(default_factory=PortLabelConfig)
 
     commonBlock: str | None = None
     configurationValues: Dict[str, ConfigurationValue] = field(default_factory=dict)
@@ -234,6 +239,65 @@ class BlockTypeConfig:
             resolved_type = self._resolve_string(config_value.type, configuration_values)
             parameter_types[param_name] = resolved_type
         return parameter_types
+
+    def get_port_labels(self, configuration_values):
+        input_count, output_count = self.get_port_number(configuration_values)
+
+        return (
+            self._resolve_labels(
+                self.inputPortLabels,
+                input_count,
+                configuration_values
+            ),
+            self._resolve_labels(
+                self.outputPortLabels,
+                output_count,
+                configuration_values
+            )
+        )
+
+    def _resolve_labels(self, cfg: PortLabelConfig, expected_count, configuration_values):
+        variables = dict(configuration_values)
+        variables["PortCount"] = expected_count
+
+        # No labels specified
+        if cfg is None:
+            return [None] * expected_count
+
+        # -----------------------------------------
+        # Static labels
+        # -----------------------------------------
+        if cfg.labels is not None:
+            result = cfg.labels[:expected_count]
+
+        # -----------------------------------------
+        # Generated labels
+        # -----------------------------------------
+        elif cfg.generator is not None:
+            result = SafeEvaluator(variables).evaluate(cfg.generator)
+
+        # -----------------------------------------
+        # Nothing specified
+        # -----------------------------------------
+        else:
+            return [None] * expected_count
+
+        if not isinstance(result, list):
+            raise ValueError("Port label generator must return a list.")
+
+        if len(result) != expected_count:
+            raise ValueError(
+                f"Port label generator returned {len(result)} labels, "
+                f"expected {expected_count}."
+            )
+
+        for i, x in enumerate(result):
+            if x is not None and not isinstance(x, str):
+                raise ValueError(
+                    f"Label {i} must be a string or None, got {type(x).__name__}."
+                )
+
+        return result
 
 @dataclass
 class BlockLibraryConfig:

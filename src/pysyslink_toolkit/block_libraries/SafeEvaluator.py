@@ -28,6 +28,8 @@ class SafeEvaluator(ast.NodeVisitor):
             "min": min,
             "abs": abs,
             "int": int,
+            "range": range,
+            "str": str,
         }
 
     def visit(self, node):
@@ -76,3 +78,39 @@ class SafeEvaluator(ast.NodeVisitor):
 
     def generic_visit(self, node):
         raise ValueError(f"Unsupported expression: {type(node).__name__}")
+
+    def visit_ListComp(self, node):
+        result = []
+
+        def recurse(level):
+            if level == len(node.generators):
+                result.append(self.visit(node.elt))
+                return
+
+            gen = node.generators[level]
+
+            iterable = self.visit(gen.iter)
+
+            for value in iterable:
+                old = self.variables.get(gen.target.id, None)
+                had_old = gen.target.id in self.variables
+
+                self.variables[gen.target.id] = value
+
+                if not gen.ifs or all(self.visit(cond) for cond in gen.ifs):
+                    recurse(level + 1)
+
+                if had_old:
+                    self.variables[gen.target.id] = old
+                else:
+                    del self.variables[gen.target.id]
+
+        recurse(0)
+
+        return result
+
+    def visit_JoinedStr(self, node):
+        return "".join(str(self.visit(v)) for v in node.values)
+
+    def visit_FormattedValue(self, node):
+        return self.visit(node.value)   
