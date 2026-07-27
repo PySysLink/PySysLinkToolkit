@@ -1,5 +1,6 @@
 import ast
 import enum
+import re
 from typing import Any, Dict, Tuple
 import yaml
 
@@ -200,13 +201,14 @@ class BlockTypeConfig:
                 if cfg.supported_port_types_for_inheritance
                 else None
             ,
+            inheritance_group=cfg.inheritance_group
         )
 
     def _resolve_signal_value_type(self, value: str | None, configuration_values: Dict[str, Any]) -> FullySupportedSignalValueType | None:
         if value is None:
             return None
 
-        resolved = configuration_values.get(value, value)
+        resolved = self._resolve_string(value, configuration_values)
 
         if isinstance(resolved, FullySupportedSignalValueType):
             return resolved
@@ -216,13 +218,14 @@ class BlockTypeConfig:
     def _resolve_string(self, value: str | None, configuration_values: Dict[str, Any]) -> str | None:
         if value is None:
             return None
-        
-        if value.endswith('[]'):
-            base_value = value[:-2]
-            resolved_base = configuration_values.get(base_value, base_value)
-            return str(resolved_base) + "[]"
 
-        return str(configuration_values.get(value, value))
+        resolved = value
+
+        # Replace every configuration variable occurrence
+        for key, val in configuration_values.items():
+            resolved = re.sub(rf"\b{re.escape(key)}\b", str(val), resolved)
+
+        return resolved
     
 
     def get_parameter_types(self, configuration_values: Dict[str, Any]) -> Dict[str, str]:

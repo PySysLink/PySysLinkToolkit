@@ -109,6 +109,8 @@ class PortTypeConfig:
     other_type_name: str | None = None
     supported_port_types_for_inheritance: list[PortTypeConfig | Literal["FullySupportedSignalValueType.Any"]] | None = None
 
+    inheritance_group: int = 0
+
     # @classmethod
     # def from_dic
 
