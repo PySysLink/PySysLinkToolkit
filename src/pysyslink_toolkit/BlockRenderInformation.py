@@ -45,12 +45,12 @@ class BlockRenderInformation:
     show_image_and_text: bool = False
 
     # New properties for dimensions
-    default_width: float = 120.0
-    default_height: float = 50.0
+    default_width: float = 140.0
+    default_height: float = 60.0
     min_width: float = 60.0
-    min_height: float = 25.0
+    min_height: float = 20.0
     max_width: float = 360.0
-    max_height: float = 150.0
+    max_height: float = 160.0
 
     input_ports: int = 1
     output_ports: int = 1
