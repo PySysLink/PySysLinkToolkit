@@ -25,3 +25,8 @@ test = ["pytest"]
 
 [project.scripts]
 pysyslink = "pysyslink_toolkit.cli:main"
+
+[tool.setuptools.package-data]
+pysyslink_toolkit = [
+    "block_libraries/**/*.pslkblp.yaml",
+]
