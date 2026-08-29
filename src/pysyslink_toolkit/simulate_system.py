@@ -1,6 +1,8 @@
 import faulthandler
 import re
-import subprocess; faulthandler.enable()
+import subprocess
+
+from pathlib import Path
 import json
 import time
 import yaml
@@ -26,6 +28,8 @@ async def simulate_system(
         The simulation output object.
     """
 
+    root_path = Path(system_yaml_path).parent
+    
     cmd = ["PySysLinkBase", "--verbose"]
 
     # if verbose:
@@ -37,12 +41,13 @@ async def simulate_system(
         cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        text=True
+        text=True,
+        cwd=root_path
     )
 
-    with open("stdout.txt", "w") as f:
+    with open(root_path / "stdout.txt", "w") as f:
         f.write(result.stdout)
-    with open("stderr.txt", "w") as f:
+    with open(root_path / "stderr.txt", "w") as f:
         f.write(result.stderr)
 
     if result.returncode != 0:
