@@ -110,7 +110,10 @@ def get_block_render_information(toolkit_config_path: str | None, block_data: Di
     for plugin in block_library_plugins:
         try:
             print(f"Testing plugin {plugin.block_library_plugin_config.pluginName}")
-            return plugin.get_block_render_information(block)
+            render_info = plugin.get_block_render_information(block, pslk_path)
+            if len(render_info.additional_properties) > 0:
+                print(f"Plugin {plugin.block_library_plugin_config.pluginName} returned additional properties: {render_info.additional_properties}")
+            return render_info
         except NotImplementedError as e:
             print(f"Not implemented error happened: {e}")
             continue

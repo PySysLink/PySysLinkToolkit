@@ -13,10 +13,10 @@ from pysyslink_toolkit.HighLevelSystem import HighLevelSystem
 from pysyslink_toolkit.toolkit_config.ParseToolkitConfig import parse_toolkit_config
 
 
-def compile_high_level_block(block: HighLevelBlock, plugins: list[BlockLibraryPluginConfig]) -> LowLevelBlockStructure:
+def compile_high_level_block(block: HighLevelBlock, plugins: list[BlockLibraryPluginConfig], pslk_path: str) -> LowLevelBlockStructure:
     for plugin in plugins:
         try:
-            return plugin.compile_block(block)
+            return plugin.compile_block(block, pslk_path)
         except NotImplementedError:
             continue
     raise RuntimeError(f"No plugin could compile block: {block.block_type}")
@@ -63,7 +63,7 @@ def compile_pslk_to_yaml(pslk_path: str, toolkit_config_path: str, output_yaml_p
     # Compile each high-level block
     block_structs: Dict[str, LowLevelBlockStructure] = {}
     for block in high_level_system.blocks:
-        ll_struct = compile_high_level_block(block, block_library_plugins)
+        ll_struct = compile_high_level_block(block, block_library_plugins, pslk_path)
         block_structs[block.id] = ll_struct
 
     print("High level blocks compiled")

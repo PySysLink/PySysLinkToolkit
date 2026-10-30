@@ -2,6 +2,9 @@ from enum import Enum
 import json
 
 from pysyslink_toolkit.PortType import PortType
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from pysyslink_toolkit.block_libraries.BlockLibraryPluginConfig import ConfigurationValue
 
 class BlockShape(Enum):
     square = "square"
@@ -61,6 +64,8 @@ class BlockRenderInformation:
     input_port_labels: list[str | None] = []
     output_port_labels: list[str | None] = []
 
+    additional_properties: dict[str, ConfigurationValue] = {}
+
     def to_dict(self):
         return {
             "shape": self.shape.value,
@@ -80,6 +85,7 @@ class BlockRenderInformation:
             "output_port_types": [pt.to_dict() for pt in self.output_port_types],
             "input_port_labels": self.input_port_labels,
             "output_port_labels": self.output_port_labels,
+            "additional_properties": {k: v.to_dict() for k, v in self.additional_properties.items()}
         }
 
     def to_json(self):

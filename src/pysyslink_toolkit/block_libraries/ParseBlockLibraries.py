@@ -248,6 +248,10 @@ def load_block_library_plugins_from_paths(paths: List[str]) -> list[BlockLibrary
     all_paths = list(paths)
     if default_path:
         all_paths.insert(0, default_path)
+    all_paths.append('/usr/local/lib/pysyslink_plugins/toolkit_block_libraries')
+    all_paths.append('/usr/lib/pysyslink_plugins/toolkit_block_libraries')
+    all_paths.append('~/.local/lib/pysyslink_plugins/toolkit_block_libraries')
+
 
     plugin_configs = _parse_block_library_configs_from_paths(all_paths)
     

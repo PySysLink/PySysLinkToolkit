@@ -11,7 +11,7 @@ import mpld3
 
 
 class ScopePlugin(pysyslink_toolkit.BlockLibraryPlugin):   
-    def _compile_block(self, high_level_block: HighLevelBlock) -> LowLevelBlockStructure:
+    def _compile_block(self, high_level_block: HighLevelBlock, pslk_path: str) -> LowLevelBlockStructure:
         port_map = {}
         blocks = []
 

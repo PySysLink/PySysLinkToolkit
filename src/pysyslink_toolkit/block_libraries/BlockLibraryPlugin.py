@@ -24,19 +24,19 @@ class BlockLibraryPlugin(abc.ABC):
             raise NotImplementedError(f"Block type {block_type_name} not found on library {block_library.name} in plugin {self.block_library_plugin_config.pluginName}")
         return block_type
 
-    def compile_block(self, high_level_block: HighLevelBlock) -> LowLevelBlockStructure:
+    def compile_block(self, high_level_block: HighLevelBlock, pslk_path: str) -> LowLevelBlockStructure:
         self.get_block_type_config(high_level_block.block_library, high_level_block.block_type)
-        return self._compile_block(high_level_block)
+        return self._compile_block(high_level_block, pslk_path)
 
     @abc.abstractmethod
-    def _compile_block(self, high_level_block: HighLevelBlock) -> LowLevelBlockStructure:
+    def _compile_block(self, high_level_block: HighLevelBlock, pslk_path: str) -> LowLevelBlockStructure:
         pass
 
-    def get_block_render_information(self, high_level_block: HighLevelBlock) -> BlockRenderInformation:
+    def get_block_render_information(self, high_level_block: HighLevelBlock, pslk_path: str) -> BlockRenderInformation:
         self.get_block_type_config(high_level_block.block_library, high_level_block.block_type)
-        return self._get_block_render_information(high_level_block)
+        return self._get_block_render_information(high_level_block, pslk_path)
 
-    def _get_block_render_information(self, high_level_block: HighLevelBlock) -> BlockRenderInformation:
+    def _get_block_render_information(self, high_level_block: HighLevelBlock, pslk_path: str) -> BlockRenderInformation:
         render_information = BlockRenderInformation()
         render_information.text = high_level_block.block_type
 
@@ -63,10 +63,8 @@ class BlockLibraryPlugin(abc.ABC):
         else:
             render_information.output_port_types = []
 
-        (
-            render_information.input_port_labels,
-            render_information.output_port_labels,
-        ) = block_type_config.get_port_labels(configuration_values)
+        render_information.input_port_labels, render_information.output_port_labels = block_type_config.get_port_labels(configuration_values)
+
 
         print(f"Render info for block: {high_level_block.id}, input_port_labels: {render_information.input_port_labels}, output_port_labels: {render_information.output_port_labels}")
         print(f"Block type config: {block_type_config}")

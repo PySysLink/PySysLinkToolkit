@@ -94,7 +94,7 @@ class CoreBlockLibraryPlugin(BlockLibraryPlugin):
             block_library = block_library[5:]
         return block_library + "/" + block_type
 
-    def _compile_block(self, high_level_block: HighLevelBlock) -> LowLevelBlockStructure:
+    def _compile_block(self, high_level_block: HighLevelBlock, pslk_path: str) -> LowLevelBlockStructure:
         converted_properties = self._convert_property_types(
             high_level_block.block_library,
             high_level_block.block_type,

@@ -6,7 +6,7 @@ import yaml
 
 
 from pysyslink_toolkit.HighLevelBlock import HighLevelBlock
-from pysyslink_toolkit.BlockRenderInformation import BlockRenderInformation, BlockShape
+from pysyslink_toolkit.BlockRenderInformation import BlockShape
 from pysyslink_toolkit.LowLevelBlockStructure import LowLevelBlock, LowLevelBlockStructure
 
 
@@ -24,6 +24,14 @@ class ConfigurationValue:
                         List[List[float]], List[List[int]], List[List[str]], List[List[complex]], List[List[bool]], None]
     type: str
     metadata: dict = field(default_factory=dict)
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "defaultValue": self.defaultValue,
+            "type": self.type,
+            "metadata": self.metadata
+        }
 
 @dataclass
 class PortLabelConfig:
