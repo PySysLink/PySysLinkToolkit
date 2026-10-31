@@ -198,12 +198,17 @@ def _parse_block_library_configs_from_paths(paths: List[str]) -> List[BlockLibra
     plugin_configs: List[BlockLibraryPluginConfig] = []
 
     yaml_files: List[str] = []
+    seen_yaml_paths: set[str] = set()
 
     for path in paths:
         print("GLOBBING PATH:", path, flush=True)
-        yaml_files.extend(
-            glob.glob(os.path.join(path, "**", "*.pslkblp.yaml"), recursive=True)
-        )
+        for file_path in glob.glob(
+            os.path.join(path, "**", "*.pslkblp.yaml"), recursive=True
+        ):
+            canonical_path = os.path.realpath(file_path)
+            if canonical_path not in seen_yaml_paths:
+                yaml_files.append(file_path)
+                seen_yaml_paths.add(canonical_path)
     
     dacite_config = Config(
         cast=[BlockLibraryPluginType, BlockShape],
@@ -264,10 +269,12 @@ def load_block_library_plugins_from_paths(paths: List[str]) -> list[BlockLibrary
             module_name = py_path.stem # py_path.stem is correct, it returns the module name
             try: 
                 plugins.append(load_high_level_plugin_from_file(py_path, module_name, plugin_config))
+                print(f"Loaded plugin: {plugin_config.pluginName} from {py_path}")
             except ImportError as e:
                 print("Error loading plugin: {}".format(e.msg))
         elif plugin_config.pluginType == BlockLibraryPluginType.CoreBlockLibrary:
             plugins.append(CoreBlockLibraryPlugin(plugin_config))
+            print(f"Loaded core plugin: {plugin_config.pluginName} from {plugin_config.yaml_filename}")
 
             
     return plugins
