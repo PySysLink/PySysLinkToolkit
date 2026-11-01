@@ -114,7 +114,7 @@ class BlockTypeConfig:
         Resolve a port-type dictionary into a list ordered by port index.
 
         Priority:
-            explicit index > others > all
+            explicit index > range > all > others for unresolved ports
         """
 
         if expected_count < 0:
@@ -144,20 +144,39 @@ class BlockTypeConfig:
             for i in range(expected_count):
                 result[i] = all_type
 
-        # Apply explicit indexes
-        for key, cfg in configs.items():
+        range_configs: list[tuple[int, int, PortTypeConfig]] = []
+        explicit_configs: list[tuple[int, PortTypeConfig]] = []
 
+        for key, cfg in configs.items():
             if key in ("all", "others"):
                 continue
 
-            # accept int keys or numeric strings
             if isinstance(key, int):
                 idx = key
             elif isinstance(key, str) and key.isdigit():
                 idx = int(key)
+            elif isinstance(key, str):
+                port_range = self._parse_port_type_range(key, configuration_values)
+                if port_range is None:
+                    raise ValueError(f"Invalid port type key: {key}")
+                range_configs.append((*port_range, cfg))
+                continue
             else:
                 raise ValueError(f"Invalid port type key: {key}")
 
+            explicit_configs.append((idx, cfg))
+
+        # Apply ranges before explicit indexes so explicit definitions take precedence.
+        for start, end, cfg in range_configs:
+            for idx in range(start, end + 1):
+                if idx < 0 or idx >= expected_count:
+                    raise ValueError(
+                        f"Port index {idx} out of range (0..{expected_count - 1})"
+                    )
+                result[idx] = self._resolve_port_type(cfg, configuration_values)
+
+        # Apply explicit indexes
+        for idx, cfg in explicit_configs:
             if idx < 0 or idx >= expected_count:
                 raise ValueError(
                     f"Port index {idx} out of range (0..{expected_count - 1})"
@@ -180,6 +199,28 @@ class BlockTypeConfig:
 
         print(f"Resolved port types for configs {configs}: {result}")
         return result
+
+    def _parse_port_type_range(
+        self, key: str, configuration_values: Dict[str, Any]
+    ) -> tuple[int, int] | None:
+        for separator in re.finditer("-", key):
+            start_expression = key[:separator.start()].strip()
+            end_expression = key[separator.end():].strip()
+            if not start_expression or not end_expression:
+                continue
+
+            try:
+                start = SafeEvaluator(configuration_values).visit(
+                    ast.parse(start_expression, mode="eval")
+                )
+                end = SafeEvaluator(configuration_values).visit(
+                    ast.parse(end_expression, mode="eval")
+                )
+                return int(start), int(end)
+            except (ArithmeticError, SyntaxError, TypeError, ValueError):
+                continue
+
+        return None
 
     def _resolve_port_type(self, cfg: PortTypeConfig, configuration_values: Dict[str, Any]) -> PortType:
         """
@@ -343,4 +384,3 @@ class BlockLibraryPluginConfig:
     
 
     
-
